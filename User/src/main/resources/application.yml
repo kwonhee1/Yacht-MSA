@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: Yacht
+  config:
+    import: optional:file:.env[.properties]
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 3
+  jpa:
+    properties:
+      hibernate:
+        show_sql: true
+        jdbc:
+          time_zone: UTC
+    hibernate:
+      ddl-auto: update
+
+token:
+  SECRET_KEY: ${SECRET_KEY}
+  EXPIRATION_SECOND: 999999999
+    # test 환경 무한대 설정
+    # 86400000
