@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: Yacht
+  config:
+    import: optional:file:.env[.properties]
+
+token:
+  SECRET_KEY: ${SECRET_KEY}
+  EXPIRATION_SECOND: 999999999
+    # test 환경 무한대 설정
+    # 86400000

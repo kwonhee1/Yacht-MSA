@@ -1,0 +1,49 @@
+plugins {
+	id 'java'
+}
+
+group = 'HooYah'
+version = '0.0.1-SNAPSHOT'
+description = 'Demo project for Spring Boot'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework:spring-webmvc:6.1.0'
+    implementation("org.springframework.cloud:spring-cloud-starter-gateway-server-webflux:5.0.0")
+
+	// implementation 'org.springframework.boot:spring-boot-starter-web'
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+
+    // db
+    implementation 'org.springframework:spring-jdbc:6.1.14'
+    implementation 'com.zaxxer:HikariCP:5.1.0' // connection pool
+
+    // mysql
+    implementation("com.mysql:mysql-connector-j:8.0.33")
+
+    // jwt
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
