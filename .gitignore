@@ -1,5 +1,7 @@
 .env
 .json
+**.txt
+**.text
 
 HELP.md
 .gradle

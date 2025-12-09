@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.route.Route;
@@ -28,8 +29,11 @@ public class Router {
 
     private final JdbcTemplate jdbcTemplate;
 
-    private String USER_SERVER_PATH = "/user/**";
-    private String USER_SERVER_URI = "http://localhost:8081/user/";
+    @Value("${USER_SERVER_PATH}")
+    private String USER_SERVER_PATH;
+
+    @Value("${USER_SERVER_URI}")
+    private String USER_SERVER_URI;
 
     @Bean
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
@@ -39,11 +43,33 @@ public class Router {
                     public Buildable<Route> apply(PredicateSpec predicateSpec) {
                         return predicateSpec
                                 .path(USER_SERVER_PATH)
-                                .filters(f->f.filter(new TokenFilter()))
+                                .filters(f->
+                                        f.filter(new TokenFilter())
+                                                .filter(new LogFilter())
+                                )
                                 .uri(USER_SERVER_URI);
                     }
                 })
                 .build();
+    }
+
+    class LogFilter implements GatewayFilter {
+        @Override
+        public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+            ServerHttpRequest request = exchange.getRequest();
+            Long userId = (Long) request.getAttributes().get("userId");
+
+            if(userId != null)
+                log.info("user Id : " + userId);
+            else
+                log.info("no token");
+
+            log.info("uri : " + request.getURI().toString());
+            log.info("method : " + request.getMethod().toString());
+            log.info("headers : " + request.getHeaders().toString());
+
+            return chain.filter(exchange);
+        }
     }
 
     class TokenFilter implements GatewayFilter {
@@ -56,18 +82,18 @@ public class Router {
 
             Optional<Long> userId = getUserIdFromToken(request);
             if(userId.isPresent() && validateUserIdFromDb(jdbcTemplate, userId.get())) {
-                request.getAttributes().put("userId", userId.get()); // .setAttribute("userId", userId.get());
-                log.info("token success + " + userId.get());
+                request = request.mutate().header("userId", userId.get().toString()).build();
+                // request.getAttributes().put("userId", userId.get()); // .setAttribute("userId", userId.get());
             }else {
                 // todo : request 에서 token지우기 or response에 빈 token 발급하기
             }
 
-            return chain.filter(exchange);
+            return chain.filter(exchange.mutate().request(request).build());
         }
 
         private boolean validateUserIdFromDb(JdbcTemplate jdbcTemplate, Long userId) {
             Boolean isExist = jdbcTemplate.query(
-                    "select * from user where id = ?",
+                    "select 1 from user where id = ?",
                     (ps)->ps.setLong(1, userId),
                     (rs)->(Boolean)rs.next()
             );
@@ -86,6 +112,7 @@ public class Router {
                 Long userId = JWTUtil.decodeToken(token.get());
                 return Optional.of(userId);
             } catch(JwtException e){
+                e.printStackTrace();
                 return Optional.empty();
             }
         }

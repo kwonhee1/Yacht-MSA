@@ -1,11 +1,38 @@
+server:
+  port: 8081
+
 spring:
   application:
     name: Yacht
   config:
     import: optional:file:.env[.properties]
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 3
+
+# Eureka Client 설정 (서비스 디스커버리)
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 30
+    lease-expiration-duration-in-seconds: 90
 
 token:
   SECRET_KEY: ${SECRET_KEY}
   EXPIRATION_SECOND: 999999999
     # test 환경 무한대 설정
     # 86400000
+
+USER_SERVER_PATH: /user/**
+# 서비스 디스커버리 사용 시: lb://user-service (자동 로드밸런싱)
+# 직접 URI 사용 시: http://localhost:8080/user/
+USER_SERVER_URI: ${USER_SERVER_URI:lb://user-service}

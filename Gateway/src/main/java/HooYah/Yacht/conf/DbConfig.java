@@ -2,6 +2,7 @@ package HooYah.Yacht.conf;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,26 +13,30 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import javax.sql.DataSource;
 
 @Configuration
-@PropertySource("classpath:database.properties")
-public class DbConfig implements EnvironmentAware {
+public class DbConfig {
 
-    private Environment env;
+    @Value("${spring.datasource.driver-class-name}")
+    private String driverClassName;
+    @Value("${spring.datasource.url}")
+    private String url;
+    @Value("${spring.datasource.username}")
+    private String username;
+    @Value("${spring.datasource.password}")
+    private String password;
 
-    @Override
-    public void setEnvironment(Environment environment) {
-        this.env = environment;
-    }
+    @Value("${spring.datasource.hikari.maximum-pool-size}")
+    private Integer maximumPoolSize;
 
     @Bean
     public DataSource dataSource() {
         HikariConfig config = new HikariConfig();
 
-        config.setDriverClassName(env.getProperty("jdbc.driver"));
-        config.setJdbcUrl(env.getProperty("jdbc.url"));
-        config.setUsername(env.getProperty("jdbc.username"));
-        config.setPassword(env.getProperty("jdbc.password"));
+        config.setDriverClassName(driverClassName);
+        config.setJdbcUrl(url);
+        config.setUsername(username);
+        config.setPassword(password);
 
-        config.setMaximumPoolSize(Integer.parseInt(env.getProperty("jdbc.pool.max-size", "10")));
+        config.setMaximumPoolSize(maximumPoolSize);
 
         return new HikariDataSource(config);
     }
