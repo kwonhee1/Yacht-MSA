@@ -2,6 +2,9 @@
 .json
 **.txt
 **.text
+ex2/**
+**.md
+**.pem
 
 HELP.md
 .gradle
