@@ -1,22 +1,34 @@
-package HooYah.Yacht;
+package HooYah.Yacht.router;
 
+import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_REQUEST_URL_ATTR;
+
+import HooYah.Yacht.domain.module.Modules;
+import HooYah.Yacht.domain.vo.Api;
+import HooYah.Yacht.domain.vo.Host;
+import HooYah.Yacht.domain.vo.Uri;
+import HooYah.Yacht.domain.vo.Url;
 import HooYah.Yacht.user.JWTUtil;
 import io.jsonwebtoken.JwtException;
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.cloud.gateway.route.Route;
+import org.springframework.cloud.gateway.route.Route.AsyncBuilder;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.Buildable;
 import org.springframework.cloud.gateway.route.builder.PredicateSpec;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.server.ServerWebExchange;
@@ -35,6 +47,8 @@ public class Router {
     @Value("${USER_SERVER_URI}")
     private String USER_SERVER_URI;
 
+    private final Modules modules;
+
     @Bean
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
         return builder.routes()
@@ -42,15 +56,32 @@ public class Router {
                     @Override
                     public Buildable<Route> apply(PredicateSpec predicateSpec) {
                         return predicateSpec
-                                .path(USER_SERVER_PATH)
+                                .alwaysTrue()
+                                // .path(USER_SERVER_PATH) // uri matcher 부분 ex "/user/**"
                                 .filters(f->
                                         f.filter(new TokenFilter())
-                                                .filter(new LogFilter())
+                                         .filter(new LogFilter())
+                                         .filter(new URIFilter(), 15000) // 10000  RouteToRequestUrlFilter 이후 20000  LoadBalancerClientFilter 이전
                                 )
-                                .uri(USER_SERVER_URI);
+                                .uri("http://dummy"); // dummy uri (used from RouteToRequestUrlFilter, and override to uri at URIFilter
                     }
                 })
                 .build();
+    }
+
+    class URIFilter implements GatewayFilter {
+        @Override
+        public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+            Uri requestUri = Uri.from(exchange.getRequest().getURI());
+            Url loadedUrl = modules.loadRequest(requestUri);
+
+            URI loadedURI = new Api(loadedUrl, requestUri).toURI();
+            exchange.getAttributes().put(GATEWAY_REQUEST_URL_ATTR, loadedURI);
+
+            log.info("URIFilter :: requestURI {}, toUrl {}", requestUri, loadedUrl);
+
+            return chain.filter(exchange);
+        }
     }
 
     class LogFilter implements GatewayFilter {

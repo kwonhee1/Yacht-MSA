@@ -33,6 +33,41 @@ token:
     # 86400000
 
 USER_SERVER_PATH: /user/**
-# 서비스 디스커버리 사용 시: lb://user-service (자동 로드밸런싱)
-# 직접 URI 사용 시: http://localhost:8080/user/
-USER_SERVER_URI: ${USER_SERVER_URI:lb://user-service}
+USER_SERVER_URI: http://localhost:8080/user/
+
+custom:
+  servers:
+    - name: serverA
+      host: http://0.0.0.0
+      docker:
+        ca: /path/ca.pem
+        cert: /path/cert.pem
+        key: /path/client-key.pem
+      count: 3
+
+    - name: sub
+      host: http://0.0.0.0
+      docker:
+        ca: /path/ca.pem
+        cert: /path/cert.pem
+        key: /path/client-key.pem
+      count: 1
+
+  modules:
+    - match-uri: /user/**
+      services:
+        - name: user
+          server: serverA
+          port: 8080
+      subs:
+        - name: user
+          server: sub
+          port: 8080
+
+    - match-uri: /yacht/**
+      services:
+        - server: serverA
+          port: 8081
+      subs:
+        - server: sub
+          port: 8081
