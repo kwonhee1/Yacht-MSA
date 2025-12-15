@@ -1,4 +1,5 @@
 .env
+Gateway/.env.properties
 .json
 **.txt
 **.text

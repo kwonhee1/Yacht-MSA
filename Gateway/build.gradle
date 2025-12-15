@@ -4,12 +4,31 @@ plugins {
 
 group = 'HooYah'
 version = '0.0.1-SNAPSHOT'
-description = 'Demo project for Spring Boot'
+description = 'Demo project for Spring'
 
 java {
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(21)
 	}
+}
+
+jar {
+    enabled = true
+    manifest {
+        attributes(
+                'Main-Class': 'HooYah.Gateway.YachtApplication'
+        )
+    }
+
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    
+    // 서명 파일 제외 (Invalid signature file digest 오류 방지)
+    exclude 'META-INF/*.SF'
+    exclude 'META-INF/*.DSA'
+    exclude 'META-INF/*.RSA'
 }
 
 configurations {
@@ -25,6 +44,9 @@ repositories {
 dependencies {
     // implementation 'org.springframework:spring-webmvc:6.1.0'
     implementation("org.springframework.cloud:spring-cloud-starter-gateway-server-webflux:5.0.0")
+    implementation 'org.springframework.cloud:spring-cloud-starter-config:5.0.0'
+    implementation "org.springframework:spring-core:5.0.0"
+    implementation "org.springframework:spring-web:5.0.0"
     
     // Service Discovery (Eureka Client)
     // implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:4.1.1'
@@ -45,8 +67,8 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
-}
+    // jackson for yaml mapping
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.15.2'
 
-tasks.named('test') {
-	useJUnitPlatform()
 }
