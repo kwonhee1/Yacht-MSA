@@ -1,6 +1,6 @@
 servers:
   - name: serverA
-    host: http://0.0.0.0
+    host: http://1.1.1.1
     docker:
       ca: /path/ca.pem
       cert: /path/cert.pem

@@ -1,21 +1,41 @@
 package HooYah.Gateway.domain.vo;
 
-import org.springframework.http.server.PathContainer;
-import org.springframework.web.util.pattern.PathPattern;
-import org.springframework.web.util.pattern.PathPatternParser;
+import java.util.regex.Pattern;
 
-public class UriMatcher {
-    private static final PathPatternParser parser = new PathPatternParser();
+public final class UriMatcher {
 
-    private final PathPattern pathPattern;
+    private final Pattern pattern;
 
-    public UriMatcher(String pattern) { // ex /user/**
-        this.pathPattern = parser.parse(pattern);
+    /*
+       prefix (input uri matcher Str) : "/user"
+       마지막에 '/' 강제로 붙임
+       (생성된) pattern : ^ /user/ ...
+
+       input 값에 적용 : '?' 이후 값 제거,  마지막에 '/' 값 추가
+       input ex : /user?name="", -> /user/ (matching true!)
+    */
+    public UriMatcher(String prefix) { // "/user" or "/user/"
+        String regex = "^" + Pattern.quote(toUriPattern(prefix));
+        this.pattern = Pattern.compile(regex);
     }
 
     public boolean isMatch(Uri uri) {
-        if (uri == null) return false;
+        if (uri == null || uri.getUri() == null) {
+            return false;
+        }
 
-        return pathPattern.matches(PathContainer.parsePath(uri.getUri()));
+        return pattern.matcher(toUriPattern(uri.getUri())).find();
     }
+
+    private String toUriPattern(String input) {
+        int questionIndex = input.indexOf('?');
+        if(questionIndex != -1)
+            input = input.subSequence(0, questionIndex).toString();
+
+        if(!input.endsWith("/"))
+            input += "/";
+
+        return input;
+    }
+
 }
