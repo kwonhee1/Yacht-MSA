@@ -14,6 +14,16 @@ java {
 	}
 }
 
+bootJar {
+    enabled = true
+    archiveFileName = 'user.jar'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+jar {
+    enabled = false
+}
+
 configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
@@ -35,7 +45,7 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     // mysql
-    runtimeOnly 'com.mysql:mysql-connector-j'
+    implementation 'com.mysql:mysql-connector-j'
 
     // utill
     implementation 'org.springframework.boot:spring-boot-starter-validation'

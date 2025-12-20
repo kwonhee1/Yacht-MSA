@@ -26,13 +26,13 @@ public class UserController {
 
     private final UserService userService;
 
-    @PostMapping("/public/user/register")
+    @PostMapping("/public/register")
     public ResponseEntity register(@RequestBody @Valid RegisterDto dto) {
         userService.registerWithEmail(dto);
         return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", null));
     }
 
-    @PostMapping("/public/user/login")
+    @PostMapping("/public/login")
     public ResponseEntity login(@RequestBody @Valid LoginDto dto) {
         User user = userService.login(dto);
         String token = JWTUtil.generateToken(user.getId());
@@ -40,7 +40,7 @@ public class UserController {
         return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", Map.of("token", token)));
     }
 
-    @GetMapping("/public/user/email-check")
+    @GetMapping("/public/email-check")
     public ResponseEntity emailCheck(@RequestParam("email") String email) {
         boolean isExist = userService.findByEmail(email).isPresent();
 
@@ -50,14 +50,14 @@ public class UserController {
             return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "not exist", null));
     }
 
-    @GetMapping("/api/user")
+    @GetMapping("/api")
     public ResponseEntity getUser(HttpServletRequest request) {
         Long userId = Long.parseLong(request.getHeader("userId"));
         User user = userService.findById(userId);
         return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", UserInfoDto.of(user)));
     }
 
-    @DeleteMapping("/api/user")
+    @DeleteMapping("/api")
     public ResponseEntity deleteUser(HttpServletRequest request) {
         Long userId = Long.parseLong(request.getHeader("userId"));
         userService.deleteUser(userId);
