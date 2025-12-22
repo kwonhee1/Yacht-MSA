@@ -44,6 +44,10 @@ public class Uri {
         if(!proxyUri.startsWith("/"))
             proxyUri = "/" + proxyUri;
 
+        // 마지막에 '/'을 붙여줌 (? url parameter가 없을 경우만
+//        if( (!proxyUri.endsWith("/")) && (proxyUri.indexOf('?') == -1) )
+//            proxyUri += "/";
+
         return proxyUri;
     }
 

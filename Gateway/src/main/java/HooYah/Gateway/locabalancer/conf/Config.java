@@ -6,7 +6,6 @@ import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Getter
 public class Config {
 
     private static final Config instance = new Config();
@@ -22,12 +21,12 @@ public class Config {
         Logger logger = LoggerFactory.getLogger(Config.class);
 
         logger.info("Try Load Server Config");
-        try {
-            serverConfig = new ServerConfig();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        serverConfig = new ServerConfig();
         logger.info("Load Server Config Success");
+    }
+
+    public ServerConfig getServerConfig() {
+        return serverConfig;
     }
 
 }

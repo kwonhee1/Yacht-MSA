@@ -4,7 +4,6 @@ import HooYah.Gateway.gateway.AttributeConfig;
 import HooYah.Gateway.locabalancer.conf.Config;
 import HooYah.Gateway.locabalancer.conf.ServerConfig;
 import HooYah.Gateway.locabalancer.controller.LoadBalancerController;
-import HooYah.Gateway.locabalancer.domain.vo.Api;
 import HooYah.Gateway.locabalancer.domain.vo.Uri;
 import HooYah.Gateway.locabalancer.domain.vo.Url;
 import io.netty.channel.ChannelHandlerContext;

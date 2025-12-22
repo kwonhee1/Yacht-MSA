@@ -3,6 +3,7 @@ package HooYah.Gateway.locabalancer.domain.service.property;
 import HooYah.Gateway.locabalancer.domain.server.Server;
 import HooYah.Gateway.locabalancer.domain.service.Service;
 import HooYah.Gateway.locabalancer.domain.vo.Port;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,8 +12,11 @@ import lombok.Setter;
 @Setter
 public class ServiceProperty {
 
+    @JsonProperty("name")
     private String name;
+    @JsonProperty("server")
     private String server;
+    @JsonProperty("port")
     private int port;
 
     public Service toService(List<Server> servers, boolean isRunning) {

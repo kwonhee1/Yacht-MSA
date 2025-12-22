@@ -1,5 +1,8 @@
 package HooYah.Gateway;
 
+import HooYah.Gateway.config.ApplicationConfig;
+import HooYah.Gateway.user.JWTConfig;
+import HooYah.Gateway.user.db.DBConfig;
 import HooYah.Gateway.gateway.handler.URIHandler;
 import HooYah.Gateway.locabalancer.conf.Config;
 import HooYah.Gateway.gateway.handler.FrontClientHandler;
@@ -25,13 +28,13 @@ public class YachtApplication {
 
     private static final Logger log = LoggerFactory.getLogger(YachtApplication.class);
 
-    static final int LOCAL_PORT = Integer.parseInt(System.getProperty("localPort", "8443"));
-
     private final LoadBalancerController loadBalancerController = new  LoadBalancerController();
 
     public static void main(String[] args) {
         Config.getInstance();
-        new YachtApplication().run(LOCAL_PORT);
+        DBConfig.getDataSource();
+        JWTConfig.getJwtService();
+        new YachtApplication().run(new ApplicationConfig().getPort());
     }
 
     private void run(int port) {
@@ -56,7 +59,8 @@ public class YachtApplication {
                             p.addLast(new FrontClientHandler());
                         }
                     })
-                    .childOption(ChannelOption.AUTO_READ, false);
+                    // .childOption(ChannelOption.AUTO_READ, false)
+            ;
 
             ChannelFuture f = b.bind(port).sync();
             f.channel().closeFuture().sync();

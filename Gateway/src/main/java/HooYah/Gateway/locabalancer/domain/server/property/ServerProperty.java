@@ -4,6 +4,7 @@ import HooYah.Gateway.locabalancer.domain.server.Server;
 import HooYah.Gateway.locabalancer.domain.vo.Host;
 import HooYah.Gateway.locabalancer.domain.vo.Protocol;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,9 +13,13 @@ import lombok.Setter;
 @JsonIgnoreProperties(value = { "docker" })
 public class ServerProperty {
 
+    @JsonProperty("name")
     private String name;
+    @JsonProperty("host")
     private String host;
+    @JsonProperty("protocol")
     private String protocol;
+    @JsonProperty("count")
     private int count;
 
     public Server toServer() {

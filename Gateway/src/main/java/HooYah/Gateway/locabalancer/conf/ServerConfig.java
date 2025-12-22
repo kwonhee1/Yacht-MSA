@@ -1,10 +1,12 @@
 package HooYah.Gateway.locabalancer.conf;
 
+import HooYah.Gateway.config.ConfigFile;
 import HooYah.Gateway.locabalancer.domain.module.Modules;
 import HooYah.Gateway.locabalancer.domain.module.Module;
 import HooYah.Gateway.locabalancer.domain.module.property.ModuleProperty;
 import HooYah.Gateway.locabalancer.domain.server.Server;
 import HooYah.Gateway.locabalancer.domain.server.property.ServerProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import java.io.IOException;
@@ -18,15 +20,12 @@ import org.slf4j.LoggerFactory;
 
 public class ServerConfig {
 
-    private final YamlReader yamlReader;
-
     private final List<Server> servers;
     private final Modules modules;
 
     private Logger logger = LoggerFactory.getLogger(ServerConfig.class);
 
-    public ServerConfig() throws IOException {
-        yamlReader = new YamlReader();
+    public ServerConfig() {
         servers = initServers();
         modules = initModules();
     }
@@ -40,7 +39,8 @@ public class ServerConfig {
     }
 
     private List<Server> initServers() {
-        List<ServerProperty> serverProperties = yamlReader.getValueList("servers", ServerProperty.class);
+        //List<ServerProperty> serverProperties = yamlReader.getValueList("servers", ServerProperty.class);
+        List<ServerProperty> serverProperties = ((ServersProperty)ConfigFile.SERVER_YML.getValue(ServersProperty.class)).getServerProperties();
         List<Server> serverList = serverProperties.stream()
                 .map(ServerProperty::toServer)
                 .toList();
@@ -53,7 +53,7 @@ public class ServerConfig {
     }
 
     private Modules initModules() {
-        List<ModuleProperty> moduleProperties = yamlReader.getValueList("modules", ModuleProperty.class);
+        List<ModuleProperty> moduleProperties = ((ServersProperty)ConfigFile.SERVER_YML.getValue(ServersProperty.class)).getModuleProperties();
         List<Module> moduleList = moduleProperties.stream()
                 .map(f->f.toModule(servers))
                 .toList();
@@ -65,39 +65,26 @@ public class ServerConfig {
         return new Modules(moduleList);
     }
 
-    class YamlReader {
-        private static final String APPLICATION_YML = "servers.yml";
+    static class ServersProperty {
+        @JsonProperty("servers")
+        private List<ServerProperty> servers;
+        @JsonProperty("modules")
+        private List<ModuleProperty> modules;
 
-        private Map<String, String> ymlValue;
-        private ObjectMapper jsonMapper = new ObjectMapper();
-
-        public YamlReader() throws IOException {
-            init();
+        public ServersProperty(List<ServerProperty> servers, List<ModuleProperty> modules) {
+            this.servers = servers;
+            this.modules = modules;
         }
 
-        private void init() throws IOException {
-            ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
-
-            InputStream inputStream = this.getClass()
-                    .getClassLoader()
-                    .getResourceAsStream(APPLICATION_YML);
-
-            ymlValue = yamlMapper.readValue(inputStream, HashMap.class);
+        public ServersProperty() {
         }
 
-        public <T> T getValue(String propertyPath, Class<T> clazz) {
-            return jsonMapper.convertValue(ymlValue.get(propertyPath), clazz);
+        public List<ServerProperty> getServerProperties() {
+            return servers;
         }
 
-        public <T> List<T> getValueList(String propertyPath, Class<T> clazz) {
-            List<String> valueStr = getValue(propertyPath, List.class); // 이때 이미 List<Map> 형식으로 모두 변환이 되어있는 상태 --> 때문에 애당초 List<String>에 type 오류가 나야하지만 컴파일러가 잡지 못함 (runtime Exception 발생함
-            List<T> result = new ArrayList<>();
-
-            for(Object value : valueStr) {
-                result.add(jsonMapper.convertValue(value, clazz)); // map to Object
-            }
-
-            return result;
+        public List<ModuleProperty> getModuleProperties() {
+            return modules;
         }
     }
 

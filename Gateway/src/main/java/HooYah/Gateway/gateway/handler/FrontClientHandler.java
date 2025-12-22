@@ -27,7 +27,7 @@ public class FrontClientHandler extends SimpleChannelInboundHandler<FullHttpRequ
     private Logger log = LoggerFactory.getLogger(FrontClientHandler.class);
 
     public FrontClientHandler() {
-        super(false);
+        super(); // release 안하면 메모리 누수 발생 가능!
     }
 
     @Override
@@ -49,30 +49,18 @@ public class FrontClientHandler extends SimpleChannelInboundHandler<FullHttpRequ
                     }
                 });
 
-
         ChannelFuture future = b.connect();
         future.addListener((ChannelFutureListener) f -> {
             if (!f.isSuccess()) {
-                closeOnFlush(ctx.channel());
+                ctx.close();
             }
         });
     }
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) {
-        ctx.read();
-    }
-
-    @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         cause.printStackTrace();
-        closeOnFlush(ctx.channel());
-    }
-
-    static void closeOnFlush(Channel ch) {
-        if (ch.isActive()) {
-            ch.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
-        }
+        ctx.close();
     }
 
 }

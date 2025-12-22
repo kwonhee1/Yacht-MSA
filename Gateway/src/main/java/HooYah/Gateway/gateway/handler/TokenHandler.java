@@ -1,6 +1,8 @@
 package HooYah.Gateway.gateway.handler;
 
-import HooYah.Gateway.util.JWTUtil;
+import HooYah.Gateway.user.JWTConfig;
+import HooYah.Gateway.user.JWTService;
+import HooYah.Gateway.user.UserService;
 import io.jsonwebtoken.JwtException;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -12,6 +14,12 @@ import org.slf4j.LoggerFactory;
 public class TokenHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
     private Logger logger = LoggerFactory.getLogger(TokenHandler.class);
+    private final JWTService jwtService = JWTConfig.getJwtService();
+    private final UserService userService = new UserService();
+
+    public TokenHandler () {
+        super(false);
+    }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest msg) throws Exception {
@@ -29,21 +37,30 @@ public class TokenHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
         }
 
         String token = authHeaders.substring(7);
-        Optional<Long> userId = getUserIdFromToken(token);
+        Optional<Long> userIdOpt = getUserIdFromToken(token);
 
-        if (userId.isEmpty()) {
-            logger.info("no userId found from db");
+        if (userIdOpt.isEmpty()) {
+            logger.info("invalid token");
             return;
         }
 
-        logger.info("userId : " + userId.get());
-        msg.headers().set("UserId", userId.get());
-        msg.headers().set("Authorization", null);
+        Long userId =  userIdOpt.get();
+
+        if(!userService.validateUserIdFromDb(userId)){
+            logger.info("no user id from db " + userId);
+            return;
+        }
+
+        logger.info("userId : " + userId);
+        msg.headers().set("UserId", userId);
+        msg.headers().set("Authorization", ""); // can not set null : NullPointerException
     }
 
     private Optional<Long> getUserIdFromToken(String token) {
+        if(token == null || token.isEmpty())
+            return Optional.empty();
         try {
-            Long userId = JWTUtil.decodeToken(token);
+            Long userId = jwtService.decodeToken(token);
             return Optional.of(userId);
         } catch (JwtException e) {
             e.printStackTrace();

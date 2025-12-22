@@ -16,7 +16,9 @@ public class ModuleProperty {
 
     @JsonProperty("match-uri")
     private String matchUri;
+    @JsonProperty("services")
     private List<ServiceProperty> services;
+    @JsonProperty("subs")
     private List<ServiceProperty> subs;
 
     public Module toModule(List<Server> servers) {

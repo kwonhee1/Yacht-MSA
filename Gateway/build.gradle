@@ -44,10 +44,10 @@ dependencies {
     // https://mvnrepository.com/artifact/io.netty/netty-all
     implementation("io.netty:netty-all:4.2.7.Final")
 
-    implementation 'org.yaml:snakeyaml:2.0'
-
     implementation 'org.slf4j:slf4j-simple:2.0.17'
     implementation 'org.slf4j:slf4j-api:2.0.17'
+
+    implementation 'org.projectlombok:lombok:1.18.38'
 
     // db
     // implementation 'org.springframework:spring-jdbc:6.1.14'
@@ -58,11 +58,13 @@ dependencies {
 
     // jwt
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
-    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+    implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
     // jackson for yaml mapping
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.15.2'
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-properties:2.15.2'
 
+    implementation 'org.yaml:snakeyaml:2.0' // 이거 필수임?
 }
