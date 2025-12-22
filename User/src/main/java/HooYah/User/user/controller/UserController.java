@@ -1,6 +1,8 @@
 package HooYah.User.user.controller;
 
 import HooYah.User.common.SuccessResponse;
+import HooYah.User.common.excetion.CustomException;
+import HooYah.User.common.excetion.ErrorCode;
 import HooYah.User.user.JWTUtil;
 import HooYah.User.user.domain.User;
 import HooYah.User.user.dto.request.LoginDto;
@@ -52,16 +54,23 @@ public class UserController {
 
     @GetMapping("/api")
     public ResponseEntity getUser(HttpServletRequest request) {
-        Long userId = Long.parseLong(request.getHeader("userId"));
-        User user = userService.findById(userId);
+        User user = userService.findById(getUserId(request));
         return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", UserInfoDto.of(user)));
     }
 
     @DeleteMapping("/api")
     public ResponseEntity deleteUser(HttpServletRequest request) {
-        Long userId = Long.parseLong(request.getHeader("userId"));
-        userService.deleteUser(userId);
+        userService.deleteUser(getUserId(request));
         return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", null));
+    }
+
+    private Long getUserId(HttpServletRequest request) {
+        String userIdHeader = request.getHeader("userId");
+
+        if(userIdHeader == null || userIdHeader.isEmpty())
+            throw new CustomException(ErrorCode.UN_AUTHORIZATION);
+
+        return Long.parseLong(userIdHeader);
     }
 
 }

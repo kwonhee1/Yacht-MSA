@@ -2,13 +2,13 @@ package HooYah.User.user.service;
 
 import HooYah.User.common.excetion.CustomException;
 import HooYah.User.common.excetion.ErrorCode;
+import HooYah.User.passwordencoder.PasswordEncoder;
 import HooYah.User.user.domain.User;
 import HooYah.User.user.dto.request.LoginDto;
 import HooYah.User.user.dto.request.RegisterDto;
 import HooYah.User.user.repository.UserRepository;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

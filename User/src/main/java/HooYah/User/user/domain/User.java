@@ -2,6 +2,7 @@ package HooYah.User.user.domain;
 
 import HooYah.User.common.excetion.CustomException;
 import HooYah.User.common.excetion.ErrorCode;
+import HooYah.User.passwordencoder.PasswordEncoder;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -12,7 +13,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Entity
 @Table(name = "user")
