@@ -6,13 +6,13 @@ public interface RedisService {
 
     void add(Long id, Object value);
 
-    <R> Optional<R> getOrSelect(Long subjectId, Class<R> clazz, Select<R> select);
+    Optional getOrSelect(Long subjectId, Select select);
 
-    <R> Optional<R> getListOrSelect(Long subjectId, Long selectId, Class<R> clazz, Select<R> select);
+    Optional getListOrSelect(Long subjectId, Long selectId, Select select);
 
     @FunctionalInterface
-    interface Select <R> {
-        Optional<R> select();
+    interface Select  {
+        Optional select();
     }
 
 }

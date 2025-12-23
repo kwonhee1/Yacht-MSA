@@ -9,7 +9,7 @@ public class MainTest {
         RedisConfig redisConfig = new RedisConfig();
         RedisService redisService = redisConfig.userRedisService();
 
-        redisService.getOrSelect(1L, Data.class, ()-> Optional.of(new Data()));
+        redisService.getOrSelect(1L, ()-> Optional.of(new Data()));
     }
 
     static class Data {

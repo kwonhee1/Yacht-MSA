@@ -3,6 +3,7 @@ package HooYah.test;
 import HooYah.Redis.ConnectionPool;
 import HooYah.Redis.RedisServiceImpl;
 import HooYah.Redis.RedisService;
+import HooYah.test.MainTest.Data;
 
 public class RedisConfig {
 

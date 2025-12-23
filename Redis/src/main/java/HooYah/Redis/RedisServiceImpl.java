@@ -2,26 +2,33 @@ package HooYah.Redis;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Map;
 import java.util.Optional;
 
 public class RedisServiceImpl implements RedisService {
 
-    private final RedisTemplate redisTemplate;
     private final String category;
+    private final RedisTemplate redisTemplate;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private Long saveSecond = 3600L; // default value 1 hour
 
-    public RedisServiceImpl(String category, ConnectionPool connectionPool, Long second) {
+    public RedisServiceImpl(
+            String category,
+            ConnectionPool connectionPool
+    ) {
         this.redisTemplate = new JedisTemplate(connectionPool);
         this.category = category;
-        this.saveSecond = second;
     }
 
-    public RedisServiceImpl(String category, ConnectionPool connectionPool) {
-        this.redisTemplate = new JedisTemplate(connectionPool);
-        this.category = category;
+    public RedisServiceImpl(
+            String category,
+            ConnectionPool connectionPool,
+            Long second
+    ) {
+        this(category, connectionPool);
+        this.saveSecond = second;
     }
 
     @Override
@@ -32,25 +39,25 @@ public class RedisServiceImpl implements RedisService {
     }
 
     @Override
-    public <R> Optional<R> getOrSelect(Long subjectId, Class<R> clazz, Select<R> select) {
-        return getOrSelect(toKey(category, subjectId), clazz, select);
+    public Optional getOrSelect(Long subjectId, Select select) {
+        return getOrSelect(toKey(category, subjectId), select);
     }
 
     @Override
-    public <R> Optional<R> getListOrSelect(Long subjectId, Long selectId, Class<R> clazz, Select<R> select) {
-        return getOrSelect(toKey(category, subjectId, selectId), clazz, select);
+    public Optional getListOrSelect(Long subjectId, Long selectId, Select select) {
+        return getOrSelect(toKey(category, subjectId, selectId), select);
     }
 
-    private <R> Optional<R> getOrSelect(String key, Class<R> clazz, Select<R> select) {
+    private Optional getOrSelect(String key, Select select) {
         RedisValue redisValue = redisTemplate.get(key, saveSecond);
 
         if(redisValue.hasValue())
-            return Optional.of(stringToObject(redisValue.get(), clazz));
+            return Optional.of(stringToObject(redisValue.get()));
         if(redisValue.isNull())
             return Optional.empty();
 
         // not value in redis, need select
-        Optional<R> selectedData = select.select();
+        Optional selectedData = select.select();
         if(selectedData.isEmpty())
             redisTemplate.add(key, RedisValue.NULL, saveSecond);
         else
@@ -76,9 +83,9 @@ public class RedisServiceImpl implements RedisService {
         }
     }
 
-    private <RT> RT stringToObject(String value, Class<RT> clazz) {
+    private Map stringToObject(String value) {
         try {
-            return objectMapper.readValue(value, clazz);
+            return objectMapper.readValue(value, Map.class);
         } catch ( JsonProcessingException e) {
             throw new RedisException(e.getMessage());
         }
