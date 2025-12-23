@@ -1,12 +1,11 @@
-package HooYah.Yacht.yachtuser.controller;
+package HooYah.Yacht.yacht.controller;
 
 import HooYah.Yacht.common.SuccessResponse;
 import HooYah.Yacht.common.excetion.CustomException;
 import HooYah.Yacht.common.excetion.ErrorCode;
 import HooYah.Yacht.yacht.dto.request.InviteYachtDto;
 import HooYah.Yacht.yacht.dto.response.ResponseYachtDto;
-import HooYah.Yacht.yachtuser.service.YachtUserService;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import HooYah.Yacht.yacht.service.YachtUserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;

@@ -1,6 +1,6 @@
-package HooYah.Yacht.yachtuser.repository;
+package HooYah.Yacht.yacht.repository;
 
-import HooYah.Yacht.yachtuser.domain.YachtUser;
+import HooYah.Yacht.yacht.domain.YachtUser;
 import HooYah.Yacht.yacht.domain.Yacht;
 import java.util.List;
 import java.util.Optional;

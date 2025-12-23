@@ -1,6 +1,5 @@
-package HooYah.Yacht.yachtuser.domain;
+package HooYah.Yacht.yacht.domain;
 
-import HooYah.Yacht.yacht.domain.Yacht;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;

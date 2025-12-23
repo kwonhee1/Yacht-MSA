@@ -1,12 +1,12 @@
-package HooYah.Yacht.yachtuser.service;
+package HooYah.Yacht.yacht.service;
 
 import HooYah.Yacht.common.excetion.CustomException;
 import HooYah.Yacht.common.excetion.ErrorCode;
 import HooYah.Yacht.yacht.domain.Yacht;
 import HooYah.Yacht.yacht.dto.response.ResponseYachtDto;
 import HooYah.Yacht.yacht.repository.YachtRepository;
-import HooYah.Yacht.yachtuser.domain.YachtUser;
-import HooYah.Yacht.yachtuser.repository.YachtUserRepository;
+import HooYah.Yacht.yacht.domain.YachtUser;
+import HooYah.Yacht.yacht.repository.YachtUserRepository;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;

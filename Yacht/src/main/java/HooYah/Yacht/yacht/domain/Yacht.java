@@ -1,6 +1,5 @@
 package HooYah.Yacht.yacht.domain;
 
-import HooYah.Yacht.yachtuser.domain.YachtUser;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
