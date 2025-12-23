@@ -4,13 +4,15 @@ import java.util.Optional;
 
 public interface RedisService {
 
-    void add(Long id, Long second);
+    void add(Long id, Object value);
 
-    boolean isExist(Long id, SelectDB selectDB, Long second);
+    <R> Optional<R> getOrSelect(Long subjectId, Class<R> clazz, Select<R> select);
+
+    <R> Optional<R> getListOrSelect(Long subjectId, Long selectId, Class<R> clazz, Select<R> select);
 
     @FunctionalInterface
-    interface SelectDB {
-        Optional select(Long id);
+    interface Select <R> {
+        Optional<R> select();
     }
 
 }
