@@ -7,6 +7,7 @@ import HooYah.User.user.domain.User;
 import HooYah.User.user.dto.request.LoginDto;
 import HooYah.User.user.dto.request.RegisterDto;
 import HooYah.User.user.repository.UserRepository;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -51,6 +52,15 @@ public class UserService {
     @Transactional
     public void deleteUser(Long userId) {
         // todo : delete 구현
+    }
+
+    public List<User> getUserList(List<Long> userIdList) {
+        List<User> response = userRepository.findAllById(userIdList);
+
+        if(response.size() != userIdList.size())
+            throw new CustomException(ErrorCode.CONFLICT);
+
+        return response;
     }
 
 }

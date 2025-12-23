@@ -11,6 +11,8 @@ import HooYah.User.user.dto.response.UserInfoDto;
 import HooYah.User.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -62,6 +64,17 @@ public class UserController {
     public ResponseEntity deleteUser(HttpServletRequest request) {
         userService.deleteUser(getUserId(request));
         return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", null));
+    }
+
+    /*
+      * throw
+      *      CONFLICT : input (UserIdList.size) != output (UserInfoList.size) :: 잘못된 userId값이 포함되었을 경우 (중복 값인 경우도 포함됨)
+     */
+    @PostMapping("/proxy/user-list")
+    public ResponseEntity getUserList(@RequestBody List<Long> userIdList) {
+        List<User> userList = userService.getUserList(userIdList);
+        List<UserInfoDto> userInfoList = userList.stream().map(UserInfoDto::of).toList();
+        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", userInfoList));
     }
 
     private Long getUserId(HttpServletRequest request) {
