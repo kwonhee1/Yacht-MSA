@@ -1,18 +1,21 @@
 package HooYah.Redis;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface RedisService {
 
     void add(Long id, Object value);
 
-    Optional getOrSelect(Long subjectId, Select select);
+    Optional getOrSelect(Long subjectId, Select<Optional> select);
 
-    Optional getListOrSelect(Long subjectId, Long selectId, Select select);
+    Optional getOrSelect(Long subjectId, Long selectId, Select<Optional> select);
+
+    List getListOrSelect(Long subjectId, List<Long> selectIdList, Select<List> select);
 
     @FunctionalInterface
-    interface Select  {
-        Optional select();
+    interface Select <S> {
+        S select();
     }
 
 }

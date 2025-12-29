@@ -1,16 +1,16 @@
 package HooYah.test;
 
-import HooYah.Redis.ConnectionPool;
+import HooYah.Redis.pool.ConnectionPool;
 import HooYah.Redis.RedisServiceImpl;
 import HooYah.Redis.RedisService;
-import HooYah.test.MainTest.Data;
+import HooYah.Redis.pool.Pool;
 
 public class RedisConfig {
 
-    private ConnectionPool connectionPool = ConnectionPool.generate("host", 6, "password", "username", 3);
+    private Pool pool = ConnectionPool.generate("host", 6, "password", "username", 3);
 
     public RedisService userRedisService() {
-        return new RedisServiceImpl("REDIS_USER_MODULE_NAME", connectionPool);
+        return new RedisServiceImpl("REDIS_USER_MODULE_NAME", pool);
     }
 
 }

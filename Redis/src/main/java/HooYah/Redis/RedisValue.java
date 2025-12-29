@@ -1,5 +1,7 @@
 package HooYah.Redis;
 
+import java.util.Optional;
+
 public class RedisValue {
 
     public final static String NULL = "NULL";
