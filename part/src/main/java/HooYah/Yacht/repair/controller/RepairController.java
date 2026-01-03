@@ -1,13 +1,15 @@
 package HooYah.Yacht.repair.controller;
 
-import HooYah.Yacht.common.SuccessResponse;
-import HooYah.Yacht.common.excetion.CustomException;
-import HooYah.Yacht.common.excetion.ErrorCode;
-import HooYah.Yacht.redis.UserService;
+import HooYah.Redis.RedisService;
 import HooYah.Yacht.repair.domain.Repair;
 import HooYah.Yacht.repair.dto.RequestRepairDto;
 import HooYah.Yacht.repair.dto.RepairDto;
+import HooYah.Yacht.SuccessResponse;
+import HooYah.Yacht.excetion.CustomException;
+import HooYah.Yacht.excetion.ErrorCode;
 import HooYah.Yacht.repair.service.RepairService;
+import HooYah.Yacht.webclient.WebClient;
+import HooYah.Yacht.webclient.WebClient.HttpMethod;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.ArrayList;
@@ -31,7 +33,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class RepairController {
 
     private final RepairService repairService;
-    private final UserService userRedisService;
+    // private final UserService userRedisService;
+    private final RedisService userRedisService;
+
+    private final WebClient webClient;
 
     @GetMapping("{partId}")
     public ResponseEntity getPairList(
@@ -42,7 +47,11 @@ public class RepairController {
         List<Repair> repairList = repairService.getRepairListByPart(partId, userId);
 
         List<Long> repairUserIdList = repairList.stream().map(Repair::getUserId).toList();
-        List<?> repairUserInfoList = userRedisService.getUserInfo(repairUserIdList); // 순서를 보장함
+        // List<?> repairUserInfoList = userRedisService.getUserInfo(repairUserIdList); // 순서를 보장함
+        List<?> repairUserInfoList = userRedisService.getListOrSelect(
+                repairUserIdList,
+                ()-> (List) webClient.webClient("", HttpMethod.POST, repairUserIdList)
+        );
 
         List<RepairDto> response = new ArrayList<>();
 
@@ -50,7 +59,7 @@ public class RepairController {
             response.add(RepairDto.of(repairList.get(i), repairUserInfoList.get(i)));
         }
 
-        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", Map.of("repairList", response)));
+        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", Map.of("repairList", response)));
     }
 
     @PostMapping
@@ -60,7 +69,7 @@ public class RepairController {
     ) {
         Long userId = getUserId(request);
         repairService.addRepair(dto.getId(), dto.getContent(), dto.getDate(), userId);
-        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", null));
+        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", null));
     }
 
     @PutMapping
@@ -70,7 +79,7 @@ public class RepairController {
     ) {
         Long userId = getUserId(request);
         repairService.updateRepair(dto.getId(), dto.getContent(), dto.getDate(), userId);
-        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", null));
+        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", null));
     }
 
     @DeleteMapping("/{repairId}")
@@ -80,7 +89,7 @@ public class RepairController {
     ) {
         Long userId = getUserId(request);
         repairService.deleteRepair(repairId, userId);
-        return  ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", null));
+        return  ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", null));
     }
 
     private Long getUserId(HttpServletRequest request) {

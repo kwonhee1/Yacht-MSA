@@ -1,8 +1,8 @@
 package HooYah.Yacht.part.controller;
 
-import HooYah.Yacht.common.SuccessResponse;
-import HooYah.Yacht.common.excetion.CustomException;
-import HooYah.Yacht.common.excetion.ErrorCode;
+import HooYah.Yacht.SuccessResponse;
+import HooYah.Yacht.excetion.CustomException;
+import HooYah.Yacht.excetion.ErrorCode;
 import HooYah.Yacht.part.dto.request.AddPartDto;
 import HooYah.Yacht.part.dto.response.PartDto;
 import HooYah.Yacht.part.dto.request.UpdatePartDto;
@@ -37,7 +37,7 @@ public class PartController {
     ) {
         Long userId = getUserId(request);
         List<PartDto> dtoList = partService.getPartListByYacht(yachtId, userId);
-        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", Map.of("partList", dtoList)));
+        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", Map.of("partList", dtoList)));
     }
 
     @PostMapping
@@ -47,7 +47,7 @@ public class PartController {
     ) {
         Long userId = getUserId(request);
         partService.addPart(dto.getYachtId(), dto, userId);
-        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", null));
+        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", null));
     }
 
     @PutMapping
@@ -57,7 +57,7 @@ public class PartController {
     ) {
         Long userId = getUserId(request);
         partService.updatePart(dto, userId);
-        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", null));
+        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", null));
     }
 
     @DeleteMapping("/{partId}")
@@ -67,7 +67,7 @@ public class PartController {
     ) {
         Long userId = getUserId(request);
         partService.deletePart(partId, userId);
-        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", null));
+        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", null));
     }
 
     private Long getUserId(HttpServletRequest request) {

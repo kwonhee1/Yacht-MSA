@@ -1,14 +1,17 @@
 package HooYah.Yacht.repair.service;
 
-import HooYah.Yacht.common.excetion.CustomException;
-import HooYah.Yacht.common.excetion.ErrorCode;
+import HooYah.Redis.RedisService;
+import HooYah.Yacht.excetion.CustomException;
+import HooYah.Yacht.excetion.ErrorCode;
 import HooYah.Yacht.part.domain.Part;
 import HooYah.Yacht.part.repository.PartRepository;
 import HooYah.Yacht.repair.domain.Repair;
 import HooYah.Yacht.repair.repository.RepairRepository;
-import HooYah.Yacht.redis.YachtService;
+import HooYah.Yacht.webclient.WebClient;
+import HooYah.Yacht.webclient.WebClient.HttpMethod;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +23,8 @@ public class RepairService {
     private final RepairRepository repairRepository;
     private final PartRepository partRepository;
 
-    private final YachtService yachtRedisService;
+    private final RedisService yachtRedisService;
+    private final WebClient webClient;
 
     @Transactional
     public List<Repair> getRepairListByPart(
@@ -31,7 +35,7 @@ public class RepairService {
         );
 
         // validate User in Yacht
-        yachtRedisService.validateYachtUser(part.getYachtId(), userId);
+        validateYachtUser(part.getYachtId(), userId);
 
         return repairRepository.findRepairListByPart(partId);
     }
@@ -42,7 +46,7 @@ public class RepairService {
                 ()-> new CustomException(ErrorCode.NOT_FOUND)
         );
 
-        yachtRedisService.validateYachtUser(part.getYachtId(), userId);
+        validateYachtUser(part.getYachtId(), userId);
 
         Repair repair = Repair
                 .builder()
@@ -64,7 +68,7 @@ public class RepairService {
         );
         Part part = repair.getPart();
 
-        yachtRedisService.validateYachtUser(part.getYachtId(), userId);
+        validateYachtUser(part.getYachtId(), userId);
 
         repair.updateRepairDate(updateDate);
         repair.updateContent(content);
@@ -79,9 +83,21 @@ public class RepairService {
         );
         Part part = repair.getPart();
 
-        yachtRedisService.validateYachtUser(part.getYachtId(), userId);
+        validateYachtUser(part.getYachtId(), userId);
 
         repairRepository.delete(repair);
+    }
+
+    private void validateYachtUser(Long yachtId, Long userId) {
+        String uri = String.format("", yachtId, userId);
+
+        Optional yachtUser = yachtRedisService.getOrSelect(
+                yachtId, userId,
+                ()-> Optional.of(webClient.webClient(uri, HttpMethod.GET, null))
+        );
+
+        if(yachtUser.isEmpty())
+            throw new CustomException(ErrorCode.CONFLICT);
     }
 
 }

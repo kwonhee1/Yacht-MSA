@@ -41,3 +41,10 @@ redis:
   module:
     yacht: Yacht
     user: User
+
+web-client:
+  gateway: http://localhost:8443
+
+  user-list: /user/proxy/user-list
+  yacht: /yacht/proxy/validate-yacht?yachtId=%d
+  yacht-user: /yacht/proxy/validate-user?yachtId=%d&userId=%d
