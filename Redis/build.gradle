@@ -12,6 +12,15 @@ java {
 	}
 }
 
+jar {
+    enabled = true
+
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
 sourceSets {
     main {
         java.srcDirs = ['src/main/java']
@@ -45,6 +54,8 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.12.2'
     testImplementation 'org.mockito:mockito-core:5.17.0'
     testImplementation 'org.assertj:assertj-core:3.27.4'
+
+    implementation 'org.slf4j:slf4j-simple:1.7.36'
 }
 
 tasks.named('test') {

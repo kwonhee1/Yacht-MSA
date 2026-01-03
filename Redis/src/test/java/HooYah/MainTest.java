@@ -1,73 +1,52 @@
 package HooYah;
 
-import HooYah.Redis.pool.JedisPool;
+import HooYah.Redis.pool.ConnectionPool;
 import HooYah.Redis.RedisService;
 import HooYah.Redis.RedisService.Select;
 import HooYah.Redis.RedisServiceImpl;
+import HooYah.Redis.pool.Pool;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.params.GetExParams;
 
 public class MainTest {
 
-    Jedis mockedJedis = Mockito.mock(Jedis.class);
-    JedisPool mockedJedisPool = Mockito.mock(JedisPool.class);
+    private Pool pool;
+    private RedisService testRedisService;
+
+    private Select selectOne;
 
     @BeforeEach
-    public void afterInit() {
-        Mockito.lenient().when(mockedJedisPool.getConnection()).thenReturn(mockedJedis);
+    public void init() {
+        pool = ConnectionPool.generate("", 1, "", "", 3);
+        testRedisService = new RedisServiceImpl("test", pool);
 
-        // set (String key, String value, SetParams setParam)
-        //Mockito.lenient().when(mockedJedis.set(Mockito.anyString(), Mockito.anyString(), Mockito.any(SetParams.class)))
-        //        .thenReturn();
-
-//        // getEx(String key, GetExParam getParam
-//        Mockito.lenient().when(mockedJedis.getEx(Mockito.anyString(), Mockito.any(GetExParams.class)))
-//                .thenReturn("조회 내용");
+        selectOne = Mockito.spy(new Select<Optional>() {
+            @Override
+            public Optional select() {
+                System.out.println("selected");
+                return Optional.of(new RedisData(1));
+            }
+        });
     }
 
     @Test
     @DisplayName("select 값이 없을 때 select가 실행되는지 확인")
     public void getOrSelectTest() {
-        RedisService redisService = new RedisConfig().userRedisService();
+        testRedisService.getOrSelect(1L, selectOne);
 
-        Select select = Mockito.mock(Select.class);
-        Mockito.when(select.select()).thenReturn(Optional.of(new Data(1L, "test")));
-
-        redisService.getOrSelect(1L, select);
-
-        Mockito.verify(select, Mockito.times(1)).select();
+        Mockito.verify(selectOne, Mockito.times(1)).select();
     }
 
     @Test
     @DisplayName("값이 존재 하면 select가 실행되지 않는지 검증")
     public void setAndGetTest() {
-        RedisService redisService = new RedisConfig().userRedisService();
-        Data data = new Data(1L, "test");
-        Mockito.when(mockedJedis.getEx(Mockito.anyString(), Mockito.any(GetExParams.class)))
-                .thenReturn(data);
+        testRedisService.getOrSelect(1L, selectOne);
+        testRedisService.getOrSelect(1L, selectOne);
 
-        Select select = Mockito.mock(Select.class);
-        Mockito.when(select.select()).thenReturn(Optional.of(new Data(1L, "test")));
-
-        redisService.add();
-    }
-
-    class Data {
-        private Long id;
-        private String name;
-
-        public Data(Long id, String name) { this.id = id; this.name = name; }
-    }
-
-    class RedisConfig {
-        public RedisService userRedisService() {
-            return new RedisServiceImpl("REDIS_USER_MODULE_NAME", mockedJedisPool);
-        }
+        Mockito.verify(selectOne, Mockito.times(1)).select();
     }
 
 }

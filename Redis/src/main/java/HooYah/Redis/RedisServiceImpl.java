@@ -49,8 +49,8 @@ public class RedisServiceImpl implements RedisService {
     }
 
     @Override
-    public Optional getOrSelect(Long subjectId, Select<Optional> select) {
-        return getOrSelect(toKey(category, subjectId), select);
+    public Optional getOrSelect(Long selectId, Select<Optional> select) {
+        return getOrSelect(toKey(category, selectId), select);
     }
 
     @Override
@@ -71,7 +71,7 @@ public class RedisServiceImpl implements RedisService {
         if(selectedData.isEmpty())
             redisTemplate.add(key, RedisValue.NULL, saveSecond);
         else
-            redisTemplate.add(key, objectToString(redisValue.get()), saveSecond);
+            redisTemplate.add(key, objectToString(selectedData.get()), saveSecond);
 
         return selectedData;
     }
@@ -82,15 +82,30 @@ public class RedisServiceImpl implements RedisService {
                         .stream()
                         .map((id)->toKey(category, subjectId, id))
                         .toList();
+        return getListOrSelectPrivate(keyList, select);
+    }
 
+    @Override
+    public List getListOrSelect(List<Long> selectIdList, Select<List> select) {
+        List<String> keyList = selectIdList
+                .stream()
+                .map((id)-> toKey(category, id))
+                .toList();
+        return getListOrSelectPrivate(keyList, select);
+    }
+
+    // todo : method name
+    private List getListOrSelectPrivate(List<String> keyList, Select<List> select) {
         List<RedisValue> redisValueList = redisTemplate.getList(keyList, saveSecond);
 
+        // check contain unKnown -> if contains must select
         boolean containsUnKnown = false;
         for(RedisValue redisValue : redisValueList)
             if(redisValue.isUnKnown())
                 containsUnKnown = true;
 
         if(!containsUnKnown) {
+            // convert value to Optional and return
             List<Optional> response =  new ArrayList<>();
             for(RedisValue redisValue : redisValueList){
                 if(redisValue.hasValue())
@@ -101,7 +116,7 @@ public class RedisServiceImpl implements RedisService {
             return response;
         }
 
-        // contains unKnown -> must select all
+        // if contains unKnown -> must select all
         List selectedData = select.select();
 
         for(int i = 0; i < selectedData.size(); i++) {

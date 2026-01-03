@@ -1,4 +1,4 @@
-package HooYah.test;
+package HooYah.use;
 
 import HooYah.Redis.pool.ConnectionPool;
 import HooYah.Redis.RedisServiceImpl;
