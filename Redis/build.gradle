@@ -18,6 +18,9 @@ jar {
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
+
+    exclude 'org/slf4j/**'
+
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
@@ -45,7 +48,7 @@ repositories {
 dependencies {
     // redis
     //implementation "org.springframework.boot:spring-boot-starter-data-redis"
-    implementation 'redis.clients:jedis:5.2.0'
+    implementation ("redis.clients:jedis:5.2.0")
     implementation("org.apache.commons:commons-pool2:2.12.0")
 
     // jackson
@@ -55,7 +58,8 @@ dependencies {
     testImplementation 'org.mockito:mockito-core:5.17.0'
     testImplementation 'org.assertj:assertj-core:3.27.4'
 
-    implementation 'org.slf4j:slf4j-simple:1.7.36'
+    compileOnly 'org.slf4j:slf4j-simple:1.7.36'
+    testImplementation 'org.slf4j:slf4j-simple:1.7.36'
 }
 
 tasks.named('test') {

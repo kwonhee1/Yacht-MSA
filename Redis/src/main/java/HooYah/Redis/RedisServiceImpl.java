@@ -132,8 +132,10 @@ public class RedisServiceImpl implements RedisService {
     private String toKey(String category, Long... id) {
         StringBuilder key = new StringBuilder(category);
 
-        for(Long i : id)
+        for(Long i : id) {
+            key.append("-");
             key.append(i);
+        }
 
         return key.toString();
     }
