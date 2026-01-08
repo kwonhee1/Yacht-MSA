@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/api/part")
+@RequestMapping("/part/api")
 public class PartController {
 
     private final PartService partService;

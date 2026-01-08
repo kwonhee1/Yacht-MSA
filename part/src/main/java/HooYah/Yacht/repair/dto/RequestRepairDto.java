@@ -1,6 +1,5 @@
 package HooYah.Yacht.repair.dto;
 
-import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

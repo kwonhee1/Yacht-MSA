@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -33,10 +34,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class RepairController {
 
     private final RepairService repairService;
-    // private final UserService userRedisService;
     private final RedisService userRedisService;
 
     private final WebClient webClient;
+
+    @Value("${web-client.gateway}")
+    private String gatewayURL;
+    @Value("${web-client.user-list}")
+    private String userListURI;
 
     @GetMapping("{partId}")
     public ResponseEntity getPairList(
@@ -47,10 +52,9 @@ public class RepairController {
         List<Repair> repairList = repairService.getRepairListByPart(partId, userId);
 
         List<Long> repairUserIdList = repairList.stream().map(Repair::getUserId).toList();
-        // List<?> repairUserInfoList = userRedisService.getUserInfo(repairUserIdList); // 순서를 보장함
         List<?> repairUserInfoList = userRedisService.getListOrSelect(
                 repairUserIdList,
-                ()-> (List) webClient.webClient("", HttpMethod.POST, repairUserIdList)
+                ()-> (List) webClient.webClient(gatewayURL + userListURI, HttpMethod.POST, repairUserIdList) // 순서 보장함
         );
 
         List<RepairDto> response = new ArrayList<>();
