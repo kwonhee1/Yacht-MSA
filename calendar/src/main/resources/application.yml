@@ -1,0 +1,62 @@
+server.port: 9094
+
+spring:
+  application:
+    name: Yacht
+  config:
+    import: optional:file:.env[.properties]
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 3
+  jpa:
+    properties:
+      hibernate:
+        show_sql: true
+        jdbc:
+          time_zone: UTC
+    hibernate:
+      ddl-auto: create
+  ai:
+    google:
+      genai:
+        api-key: ${GEMINI_API_KEY}
+        chat:
+          model: "gemini-2.5-flash"
+        file:
+          model: "gemini-2.5-flash"
+
+firebase:
+  credentials: classpath:firebase.json
+
+redis:
+  host: ${REDIS_HOST}
+  port: ${REDIS_PORT}
+  username: ${REDIS_USERNAME}
+  password: ${REDIS_PASSWORD}
+
+  maxConnection: 3
+
+  module:
+    yacht: Yacht
+    user: User
+
+web-client:
+  gateway: http://localhost:8443
+
+  user-list: /user/proxy/user-list
+  user-token-list: /user/proxy/user-token
+  
+  validate-yacht: /yacht/proxy/validate-yacht?yachtId=%d
+  yacht-list: /yacht/proxy
+  yacht-user: /yacht/proxy/validate-user?yachtId=%d&userId=%d
+  yacht-user-list: /yacht/proxy/yacht-user
+
+  part-info: /part/proxy/%d
+  part-list: /part/proxy
+  part-list-name: /part/proxy/name
+
+  repair-create: /repair/proxy
