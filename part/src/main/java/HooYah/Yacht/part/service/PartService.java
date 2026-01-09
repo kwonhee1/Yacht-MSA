@@ -26,8 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class PartService {
 
-    private final RepairService repairService;
-
     private final PartRepository partRepository;
     private final RepairRepository repairRepository;
 
@@ -59,7 +57,7 @@ public class PartService {
 
     @Transactional
     public Part addPart(Long yachtId, AddPartDto dto, Long userId) {
-        validateYacht(yachtId);
+        validateYachtUser(yachtId, userId);
 
         Part newPart = Part
                 .builder()
@@ -69,12 +67,8 @@ public class PartService {
                 .model(dto.getModel())
                 .interval(dto.getInterval())
                 .build();
-        newPart = partRepository.save(newPart);
 
-        if(dto.getLastRepair() != null)
-            repairService.addRepair(newPart.getId(), null, dto.getLastRepair(), userId);
-
-        return newPart;
+        return partRepository.save(newPart);
     }
 
     @Transactional
