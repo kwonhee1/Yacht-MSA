@@ -10,7 +10,6 @@ import HooYah.Yacht.part.dto.response.PartDto;
 import HooYah.Yacht.part.dto.request.UpdatePartDto;
 import HooYah.Yacht.part.repository.PartRepository;
 import HooYah.Yacht.repair.repository.RepairRepository;
-import HooYah.Yacht.repair.service.RepairService;
 import HooYah.Yacht.webclient.WebClient;
 import HooYah.Yacht.webclient.WebClient.HttpMethod;
 import java.util.List;
@@ -37,9 +36,10 @@ public class PartService {
 
     @Value("${web-client.yacht}")
     private String yachtURI;
-
     @Value("${web-client.yacht-user}")
     private String yachtUserURI;
+    @Value("${web-client.calendar-alarm-auto-generate}")
+    private String calendarAlarmAutoGenerateURI;
 
     public List<PartDto> getPartListByYacht(Long yachtId, Long userId) {
         validateYachtUser(yachtId, userId);
@@ -83,7 +83,7 @@ public class PartService {
 
         if(dto.getInterval() != null) {
             part.updateInterval(dto.getInterval());
-            // calendarAlarmAutoGeneratorService.generate(part);
+            updateCalenderAndAlarm(part);
         }
     }
 
@@ -100,18 +100,6 @@ public class PartService {
         partRepository.delete(part);
     }
 
-    private void validateYacht(Long yachtId) {
-        String uri = String.format(gatewayURL + yachtURI, yachtId);
-
-        Optional yachtUser = yachtRedisService.getOrSelect(
-                yachtId,
-                ()-> Optional.of(webClient.webClient(uri, HttpMethod.GET, null))
-        );
-
-        if(yachtUser.isEmpty())
-            throw new CustomException(ErrorCode.CONFLICT);
-    }
-
     private void validateYachtUser(Long yachtId, Long userId) {
         String uri = String.format(gatewayURL + yachtUserURI, yachtId, userId);
 
@@ -122,6 +110,25 @@ public class PartService {
 
         if(yachtUser.isEmpty())
             throw new CustomException(ErrorCode.CONFLICT);
+    }
+
+    private void updateCalenderAndAlarm(Part part) {
+        Optional<Repair> lastRepairOpt = repairRepository.findByIdOrderByRepairDateDesc(part.getId());
+
+        if(lastRepairOpt.isEmpty())
+            return;
+
+        Map<String, Object> body = Map.of(
+                "partId", part.getId(),
+                "yachtId", part.getYachtId(),
+                "nextRepairDate", lastRepairOpt.get().getRepairDate()
+        );
+
+        webClient.webClient(
+                gatewayURL + calendarAlarmAutoGenerateURI,
+                HttpMethod.POST,
+                body
+        );
     }
 
 }

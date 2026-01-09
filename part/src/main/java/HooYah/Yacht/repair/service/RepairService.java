@@ -11,8 +11,10 @@ import HooYah.Yacht.webclient.WebClient;
 import HooYah.Yacht.webclient.WebClient.HttpMethod;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +27,16 @@ public class RepairService {
 
     private final RedisService yachtRedisService;
     private final WebClient webClient;
+
+    @Value("${web-client.gateway}")
+    private String gatewayURL;
+
+    @Value("${web-client.yacht}")
+    private String yachtURI;
+    @Value("${web-client.yacht-user}")
+    private String yachtUserURI;
+    @Value("${web-client.calendar-alarm-auto-generate}")
+    private String calendarAlarmAutoGenerateURI;
 
     @Transactional
     public List<Repair> getRepairListByPart(
@@ -89,7 +101,7 @@ public class RepairService {
     }
 
     private void validateYachtUser(Long yachtId, Long userId) {
-        String uri = String.format("", yachtId, userId);
+        String uri = String.format(gatewayURL + yachtUserURI, yachtId, userId);
 
         Optional yachtUser = yachtRedisService.getOrSelect(
                 yachtId, userId,
@@ -98,6 +110,25 @@ public class RepairService {
 
         if(yachtUser.isEmpty())
             throw new CustomException(ErrorCode.CONFLICT);
+    }
+
+    private void updateCalenderAndAlarm(Part part) {
+        Optional<Repair> lastRepairOpt = repairRepository.findByIdOrderByRepairDateDesc(part.getId());
+
+        if(lastRepairOpt.isEmpty())
+            return;
+
+        Map<String, Object> body = Map.of(
+                "partId", part.getId(),
+                "yachtId", part.getYachtId(),
+                "nextRepairDate", lastRepairOpt.get().getRepairDate()
+        );
+
+        webClient.webClient(
+                gatewayURL + calendarAlarmAutoGenerateURI,
+                HttpMethod.POST,
+                body
+        );
     }
 
 }

@@ -18,6 +18,16 @@ servers:
     count: 1
 
 modules:
+  - match-uri: /part/
+    services:
+      - name: part
+        server: mainServer
+        port: 9093
+    subs:
+      - name: part
+        server: sub
+        port: 8082
+
   - match-uri: /user/
     services:
       - name: user
