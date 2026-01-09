@@ -70,11 +70,11 @@ public class RepairService {
 
         repairRepository.save(repair);
 
-        // updateCalenderAndAlarm(part); part가 생성되었음을 알림!
+        updateCalenderAndAlarm(part);
     }
 
     @Transactional
-    public void updateRepair(Long repairId, String content, OffsetDateTime updateDate, Long userId) {
+    public Repair updateRepair(Long repairId, String content, OffsetDateTime updateDate, Long userId) {
         Repair repair = repairRepository.findById(repairId).orElseThrow(
                 ()->new CustomException(ErrorCode.NOT_FOUND)
         );
@@ -82,10 +82,14 @@ public class RepairService {
 
         validateYachtUser(part.getYachtId(), userId);
 
-        repair.updateRepairDate(updateDate);
         repair.updateContent(content);
 
-        // updateCalenderAndAlarm(part);
+        if(updateDate != null) {
+            repair.updateRepairDate(updateDate);
+            updateCalenderAndAlarm(part);
+        }
+
+        return repair;
     }
 
     @Transactional
