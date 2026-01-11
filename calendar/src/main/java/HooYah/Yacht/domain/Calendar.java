@@ -62,17 +62,22 @@ public class Calendar {
     @OneToMany(mappedBy = "calendar", cascade = {CascadeType.REMOVE,  CascadeType.PERSIST}, orphanRemoval = true)
     private List<CalendarUser> calendarUsers;
 
-    public void setCalendarUsers(List<CalendarUser> calendarUsers) {
-        if (calendarUsers == null || calendarUsers.isEmpty())
+    public void setCalendarUsers(List<Long> userIdList) {
+        List<CalendarUser> calendarUserList = userIdList
+                .stream()
+                .map(userId->CalendarUser.builder().calendar(this).userId(userId).build())
+                .toList();
+
+        if (calendarUserList == null || calendarUserList.isEmpty())
             return;
 
         if (this.calendarUsers == null)
             this.calendarUsers = new ArrayList<>();
 
-        if (!calendarUsers.isEmpty())
+        if (!this.calendarUsers.isEmpty())
             this.calendarUsers.clear();
 
-        this.calendarUsers.addAll(calendarUsers);
+        this.calendarUsers.addAll(calendarUserList);
     }
 
     public List<Long> getCalenderUserIdList() {
@@ -111,7 +116,8 @@ public class Calendar {
     }
 
     private static void validateDate(OffsetDateTime startDate, OffsetDateTime endDate) {
-        if(!endDate.isAfter(startDate))
+        // if(!endDate.isAfter(startDate))
+        if(startDate.isAfter(endDate))
             throw new CustomException(ErrorCode.CONFLICT);
     }
 
@@ -126,6 +132,8 @@ public class Calendar {
     }
 
     static public class Builder {
+        private Long id;
+
         private CalendarType type;
         private String content;
         private String review;
@@ -151,7 +159,7 @@ public class Calendar {
                 throw new CustomException(ErrorCode.CONFLICT);
 
             return new Calendar(
-                    null, // id
+                    id,
                     type, partId, startDate, endDate, yachtId,
                     false, // completed
                     byUser, // byUser
@@ -161,6 +169,9 @@ public class Calendar {
         }
 
         // builder functions ...
+        public Builder id(Long id) {
+            this.id = id; return this;
+        }
         public Builder type(CalendarType type) {
             this.type = type; return this;
         }

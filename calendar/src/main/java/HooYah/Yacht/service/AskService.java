@@ -1,7 +1,6 @@
 package HooYah.Yacht.service;
 
 import HooYah.Redis.RedisService;
-import HooYah.Redis.RedisService.Select;
 import HooYah.Yacht.excetion.CustomException;
 import HooYah.Yacht.excetion.ErrorCode;
 import HooYah.Yacht.webclient.WebClient;
@@ -64,7 +63,7 @@ public class AskService {
 
         return yachtUser.get(); // yachtInfo
     }
-    public List getYachtInfoList(List<Long> yachtIdList) {
+    public List<?> getYachtInfoList(List<Long> yachtIdList) {
         return yachtRedisService.getListOrSelect(
                 yachtIdList,
                 ()->(List) webClient.webClient(gatewayURL+yachtListURI, HttpMethod.POST, yachtIdList)
@@ -93,7 +92,7 @@ public class AskService {
     public List<?> getPartInfoList(List<Long> partIdList) {
         return (List) partRedisService.getListOrSelect(
                 partIdList,
-                ()-> (List) webClient.webClient(gatewayURL + partInfoURI, HttpMethod.POST, partIdList)
+                ()-> (List) webClient.webClient(gatewayURL + partListURI, HttpMethod.POST, partIdList)
         );
     }
 
