@@ -43,6 +43,7 @@ redis:
   module:
     yacht: Yacht
     user: User
+    part: Part
 
 web-client:
   gateway: http://localhost:8443

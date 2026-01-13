@@ -2,9 +2,8 @@ package HooYah.Yacht.service;
 
 import static HooYah.Yacht.TestUtil.*;
 
-import HooYah.Redis.RedisService;
-import HooYah.Redis.RedisServiceImpl;
-import HooYah.Redis.pool.ConnectionPool;
+import HooYah.Redis.Cache;
+import HooYah.Redis.CacheService;
 import HooYah.Yacht.part.domain.Part;
 import HooYah.Yacht.part.repository.PartRepository;
 import HooYah.Yacht.repair.domain.Repair;
@@ -30,7 +29,7 @@ public class RepairServiceTest {
     private PartRepository mockPartRepository;
     private RepairRepository mockRepairRepository;
 
-    private RedisService inMemoryRedis;
+    private CacheService inMemoryCache;
     private WebClient mockWebClient;
 
     @BeforeEach
@@ -38,10 +37,10 @@ public class RepairServiceTest {
         mockPartRepository = Mockito.mock(PartRepository.class);
         mockRepairRepository = Mockito.mock(RepairRepository.class);
 
-        inMemoryRedis = new RedisServiceImpl("category", ConnectionPool.generate("", 0, "", "", 3)); // not mocked
+        inMemoryCache = Cache.cacheService("category", Cache.generateInMemoryPool()); // not mocked
         mockWebClient = Mockito.mock(WebClient.class);
 
-        repairService = new RepairService(mockRepairRepository, mockPartRepository, inMemoryRedis, mockWebClient);
+        repairService = new RepairService(mockRepairRepository, mockPartRepository, inMemoryCache, mockWebClient);
     }
 
     // test :

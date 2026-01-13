@@ -1,6 +1,6 @@
 package HooYah.Yacht.repair.service;
 
-import HooYah.Redis.RedisService;
+import HooYah.Redis.CacheService;
 import HooYah.Yacht.excetion.CustomException;
 import HooYah.Yacht.excetion.ErrorCode;
 import HooYah.Yacht.part.domain.Part;
@@ -25,7 +25,7 @@ public class RepairService {
     private final RepairRepository repairRepository;
     private final PartRepository partRepository;
 
-    private final RedisService yachtRedisService;
+    private final CacheService yachtCacheService;
     private final WebClient webClient;
 
     @Value("${web-client.gateway}")
@@ -107,12 +107,12 @@ public class RepairService {
     private void validateYachtUser(Long yachtId, Long userId) {
         String uri = String.format(gatewayURL + yachtUserURI, yachtId, userId);
 
-        Optional yachtUser = yachtRedisService.getOrSelect(
+        Object yachtUser = yachtCacheService.getOrSelect(
                 yachtId, userId,
-                ()-> Optional.of(webClient.webClient(uri, HttpMethod.GET, null))
+                ()-> webClient.webClient(uri, HttpMethod.GET, null)
         );
 
-        if(yachtUser.isEmpty())
+        if(yachtUser == null)
             throw new CustomException(ErrorCode.CONFLICT);
     }
 

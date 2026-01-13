@@ -1,6 +1,6 @@
 package HooYah.Yacht.repair.controller;
 
-import HooYah.Redis.RedisService;
+import HooYah.Redis.CacheService;
 import HooYah.Yacht.repair.domain.Repair;
 import HooYah.Yacht.repair.dto.RequestRepairDto;
 import HooYah.Yacht.repair.dto.RepairDto;
@@ -28,11 +28,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/api/repair")
+@RequestMapping("/repair/api")
 public class RepairController {
 
     private final RepairService repairService;
-    private final RedisService userRedisService;
+    private final CacheService userCacheService;
 
     private final WebClient webClient;
 
@@ -49,7 +49,7 @@ public class RepairController {
         List<Repair> repairList = repairService.getRepairListByPart(partId, userId);
 
         List<Long> repairUserIdList = repairList.stream().map(Repair::getUserId).toList();
-        List<?> repairUserInfoList = userRedisService.getListOrSelect(
+        List<?> repairUserInfoList = userCacheService.getListOrSelect(
                 repairUserIdList,
                 ()-> (List) webClient.webClient(gatewayURL + userListURI, HttpMethod.POST, repairUserIdList) // 순서 보장함
         );

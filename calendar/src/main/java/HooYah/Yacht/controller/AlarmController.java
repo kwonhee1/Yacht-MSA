@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping("/api/alarm")
+@RequestMapping("/alarm/api/")
 public class AlarmController {
 
     private final AlarmService alarmService;

@@ -1,8 +1,7 @@
 package HooYah.Yacht.service;
 
-import HooYah.Redis.RedisService;
-import HooYah.Redis.RedisServiceImpl;
-import HooYah.Redis.pool.ConnectionPool;
+import HooYah.Redis.Cache;
+import HooYah.Redis.CacheService;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -21,20 +20,21 @@ public class AskServiceTest {
             Map<Long, Data> dataMap,
             List<List<Long>> idList
     ) {
-        RedisService inMemoryRedisService = new RedisServiceImpl("", ConnectionPool.generate("", 0, "", "", 3));
+        CacheService inMemoryCacheService = Cache.cacheService("", Cache.generateInMemoryPool());
         dataMap.forEach((k,v)->{
-            inMemoryRedisService.add(k,v);
+            inMemoryCacheService.add(k,v);
         });
 
         AskService askService = Mockito.mock(AskService.class);
         AskService.Shared shared = askService.new Shared();
 
-        List<List<?>> resultList = shared.getListList(idList, inMemoryRedisService, (distinctIdList)->{throw new RuntimeException();});
+        List<List<?>> resultList = shared.getListList(idList, inMemoryCacheService, (distinctIdList)->{throw new RuntimeException();});
 
         for(int y = 0; y < idList.size(); y++){
             for(int x = 0; x < idList.get(y).size(); x++){
-                Assertions.assertThat(resultList.get(y).get(x))
-                        .isEqualTo(dataMap.get(idList.get(y).get(x)));
+                Map<String, Object> resultMap = (Map<String, Object>) resultList.get(y).get(x);
+                Data expectedData = dataMap.get(idList.get(y).get(x));
+                Assertions.assertThat(((Number) resultMap.get("id")).longValue()).isEqualTo(expectedData.getId());
             }
         }
     }

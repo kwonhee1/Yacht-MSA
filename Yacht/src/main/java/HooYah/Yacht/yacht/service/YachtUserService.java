@@ -7,6 +7,7 @@ import HooYah.Yacht.yacht.dto.response.ResponseYachtDto;
 import HooYah.Yacht.yacht.repository.YachtRepository;
 import HooYah.Yacht.yacht.domain.YachtUser;
 import HooYah.Yacht.yacht.repository.YachtUserRepository;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -66,6 +67,23 @@ public class YachtUserService {
                         .yacht(yacht)
                         .build()
         );
+    }
+
+    // proxy
+    @Transactional
+    public List<List<Long>> getYachtUserIdList(List<Long> yachtIdList) {
+        List<Yacht> yachtList = yachtRepository.findAllWithUserById(yachtIdList);
+        List<List<Long>> yachtUserIdList = new ArrayList<>();
+
+        for(Yacht yacht : yachtList) {
+            List<Long> userIdList = yacht.getYachtUser()
+                            .stream()
+                            .map(YachtUser::getUserId)
+                            .toList();
+            yachtUserIdList.add(userIdList);
+        }
+
+        return yachtUserIdList;
     }
 
     private long toHash(Long id) {

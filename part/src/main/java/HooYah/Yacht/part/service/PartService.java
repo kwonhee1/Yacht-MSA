@@ -1,6 +1,6 @@
 package HooYah.Yacht.part.service;
 
-import HooYah.Redis.RedisService;
+import HooYah.Redis.CacheService;
 import HooYah.Yacht.excetion.CustomException;
 import HooYah.Yacht.excetion.ErrorCode;
 import HooYah.Yacht.part.domain.Part;
@@ -28,7 +28,7 @@ public class PartService {
     private final PartRepository partRepository;
     private final RepairRepository repairRepository;
 
-    private final RedisService yachtRedisService;
+    private final CacheService yachtCacheService;
     private final WebClient webClient;
 
     @Value("${web-client.gateway}")
@@ -41,10 +41,20 @@ public class PartService {
     @Value("${web-client.calendar-alarm-auto-generate}")
     private String calendarAlarmAutoGenerateURI;
 
+    @Transactional
     public List<PartDto> getPartListByYacht(Long yachtId, Long userId) {
         validateYachtUser(yachtId, userId);
-
         List<Part> partList = partRepository.findPartListByYacht(yachtId);
+        return toPartDtoList(partList);
+    }
+
+    @Transactional
+    public List<PartDto> getPartListByIdList(List<Long> partIdList) {
+        List<Part> partList = partRepository.findAllById(partIdList);
+        return toPartDtoList(partList);
+    }
+
+    private List<PartDto> toPartDtoList(List<Part> partList) {
         List<Repair> lastRepairList = repairRepository.findAllLastRepair(partList.stream().map(Part::getId).toList());
 
         Map<Long, Repair> lastRepairMap = lastRepairList.stream().collect(Collectors.toMap(
@@ -103,12 +113,12 @@ public class PartService {
     private void validateYachtUser(Long yachtId, Long userId) {
         String uri = String.format(gatewayURL + yachtUserURI, yachtId, userId);
 
-        Optional yachtUser = yachtRedisService.getOrSelect(
+        Object yachtUser = yachtCacheService.getOrSelect(
                 yachtId, userId,
-                ()-> Optional.of(webClient.webClient(uri, HttpMethod.GET, null))
+                ()-> webClient.webClient(uri, HttpMethod.GET, null)
         );
 
-        if(yachtUser.isEmpty())
+        if(yachtUser == null)
             throw new CustomException(ErrorCode.CONFLICT);
     }
 

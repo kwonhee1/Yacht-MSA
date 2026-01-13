@@ -1,8 +1,7 @@
 package HooYah.Yacht.conf;
 
-import HooYah.Redis.RedisService;
-import HooYah.Redis.RedisServiceImpl;
-import HooYah.Redis.pool.ConnectionPool;
+import HooYah.Redis.Cache;
+import HooYah.Redis.CacheService;
 import HooYah.Redis.pool.Pool;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,31 +34,37 @@ public class RedisConfig {
     private String partModuleName;
 
     private Pool connectionPool;
+    private Pool inMemoryConnectionPool;
 
     @PostConstruct
     public void init() {
-        connectionPool = ConnectionPool.generate(host, port, password, username, maxConnectionCount);
+        try {
+            connectionPool = Cache.generateRedisPool(host, port, username, password, maxConnectionCount);
+        } catch (Exception e) {
+            connectionPool = Cache.generateInMemoryPool();
+        }
+        inMemoryConnectionPool = Cache.generateInMemoryPool();
     }
 
     @Bean
-    public RedisService yachtRedisService() {
-        return new RedisServiceImpl(yachtModuleName, connectionPool);
+    public CacheService yachtCacheService() {
+        return Cache.cacheService(yachtModuleName, connectionPool);
     }
 
     @Bean
-    public RedisService userRedisService() {
-        return new RedisServiceImpl(userModuleName, connectionPool);
+    public CacheService userCacheService() {
+        return Cache.cacheService(userModuleName, connectionPool);
     }
 
     @Bean
-    public RedisService partRedisService() {
-        return new RedisServiceImpl(partModuleName, connectionPool);
+    public CacheService partCacheService() {
+        return Cache.cacheService(partModuleName, connectionPool);
     }
 
     @Bean
-    public RedisService inMemoryUserCacheService () {
+    public CacheService inMemoryUserCacheService () {
         // key = {Category}+{UserId}, value = List<Long :: yachtId>
-        return new RedisServiceImpl("UserCache", connectionPool); // 이게 어딜 봐서 InMemory인거지?
+        return Cache.cacheService("UserCache", inMemoryConnectionPool);
     }
 
 }

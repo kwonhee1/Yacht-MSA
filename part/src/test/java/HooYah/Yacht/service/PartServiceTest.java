@@ -2,9 +2,8 @@ package HooYah.Yacht.service;
 
 import static HooYah.Yacht.TestUtil.*;
 
-import HooYah.Redis.RedisService;
-import HooYah.Redis.RedisServiceImpl;
-import HooYah.Redis.pool.ConnectionPool;
+import HooYah.Redis.Cache;
+import HooYah.Redis.CacheService;
 import HooYah.Yacht.part.domain.Part;
 import HooYah.Yacht.part.dto.request.UpdatePartDto;
 import HooYah.Yacht.part.dto.response.PartDto;
@@ -34,7 +33,7 @@ public class PartServiceTest {
     private PartRepository mockPartRepository;
     private RepairRepository mockRepairRepository;
 
-    private RedisService inMemoryRedis;
+    private CacheService inMemoryCache;
     private WebClient mockWebClient;
 
     @BeforeEach
@@ -42,10 +41,10 @@ public class PartServiceTest {
         mockPartRepository = Mockito.mock(PartRepository.class);
         mockRepairRepository = Mockito.mock(RepairRepository.class);
 
-        inMemoryRedis = new RedisServiceImpl("category", ConnectionPool.generate("", 0, "", "", 3)); // not mocked
+        inMemoryCache = Cache.cacheService("category", Cache.generateInMemoryPool()); // not mocked
         mockWebClient = Mockito.mock(WebClient.class);
 
-        partService = new PartService(mockPartRepository, mockRepairRepository, inMemoryRedis, mockWebClient);
+        partService = new PartService(mockPartRepository, mockRepairRepository, inMemoryCache, mockWebClient);
     }
 
     @Test
@@ -54,7 +53,7 @@ public class PartServiceTest {
         Long yachtId = 1L;
 
         List<Part> partList = List.of(
-                generatePart(0L, yachtId), null
+                generatePart(0L, yachtId), generatePart(1L, yachtId)
         );
         List<Repair> repairList = List.of(
                 generateRepair(0L, partList.get(0), userId), generateRepair(1L, partList.get(1), userId)
@@ -74,7 +73,7 @@ public class PartServiceTest {
                 ()->Assertions.assertThat(result.get(0).getLastRepair())
                         .isEqualTo(repairList.get(0).getRepairDate()),
                 ()->Assertions.assertThat(result.get(1).getLastRepair())
-                        .isNull()
+                        .isNotNull()
         );
     }
 

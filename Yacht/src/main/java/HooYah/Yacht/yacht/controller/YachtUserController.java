@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/api")
+@RequestMapping("/yacht/api")
 public class YachtUserController {
 
     private final YachtUserService yachtUserService;

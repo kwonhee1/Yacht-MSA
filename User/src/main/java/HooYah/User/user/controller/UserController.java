@@ -8,6 +8,7 @@ import HooYah.User.user.domain.User;
 import HooYah.User.user.dto.request.LoginDto;
 import HooYah.User.user.dto.request.RegisterDto;
 import HooYah.User.user.dto.response.UserInfoDto;
+import HooYah.User.user.repository.UserRepository;
 import HooYah.User.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -22,13 +23,16 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequiredArgsConstructor
+@RequestMapping("/user")
 public class UserController {
 
     private final UserService userService;
+    private final UserRepository userRepository;
 
     @PostMapping("/public/register")
     public ResponseEntity register(@RequestBody @Valid RegisterDto dto) {
@@ -75,6 +79,15 @@ public class UserController {
         List<User> userList = userService.getUserList(userIdList);
         List<UserInfoDto> userInfoList = userList.stream().map(UserInfoDto::of).toList();
         return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", userInfoList));
+    }
+
+    @PostMapping("/proxy/user-token")
+    public ResponseEntity getUserToken(@RequestBody List<Long> userIdList) {
+        List<String> tokenList = userRepository.findAllById(userIdList)
+                .stream()
+                .map(User::getToken)
+                .toList();
+        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", tokenList));
     }
 
     private Long getUserId(HttpServletRequest request) {

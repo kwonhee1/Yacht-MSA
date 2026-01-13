@@ -1,8 +1,7 @@
 package HooYah.Yacht.conf;
 
-import HooYah.Redis.RedisService;
-import HooYah.Redis.RedisServiceImpl;
-import HooYah.Redis.pool.ConnectionPool;
+import HooYah.Redis.Cache;
+import HooYah.Redis.CacheService;
 import HooYah.Redis.pool.Pool;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,13 +13,13 @@ public class RedisConfig {
 
     @Value("${redis.host}")
     private String host;
-    
+
     @Value("${redis.port}")
     private int port;
-    
+
     @Value("${redis.username}")
     private String username;
-    
+
     @Value("${redis.password}")
     private String password;
 
@@ -37,17 +36,21 @@ public class RedisConfig {
 
     @PostConstruct
     public void init() {
-        connectionPool = ConnectionPool.generate(host, port, password, username, maxConnectionCount);
+        try {
+            connectionPool = Cache.generateRedisPool(host, port, username, password, maxConnectionCount);
+        } catch (Exception e) {
+            connectionPool = Cache.generateInMemoryPool();
+        }
     }
 
     @Bean
-    public RedisService yachtRedisService() {
-        return new RedisServiceImpl(yachtModuleName, connectionPool);
+    public CacheService yachtCacheService() {
+        return Cache.cacheService(yachtModuleName, connectionPool);
     }
 
     @Bean
-    public RedisService userRedisService() {
-        return new RedisServiceImpl(userModuleName, connectionPool);
+    public CacheService userCacheService() {
+        return Cache.cacheService(userModuleName, connectionPool);
     }
 
 }

@@ -1,13 +1,12 @@
 package HooYah.Yacht.service;
 
-import HooYah.Redis.RedisService;
+import HooYah.Redis.CacheService;
 import HooYah.Yacht.excetion.CustomException;
 import HooYah.Yacht.excetion.ErrorCode;
 import HooYah.Yacht.webclient.WebClient;
 import HooYah.Yacht.webclient.WebClient.HttpMethod;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -16,11 +15,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AskService {
 
-    private final RedisService userRedisService;
-    private final RedisService yachtRedisService;
-    private final RedisService partRedisService;
+    private final CacheService userCacheService;
+    private final CacheService yachtCacheService;
+    private final CacheService partCacheService;
 
-    private final RedisService inMemoryUserCacheService;
+    private final CacheService inMemoryUserCacheService;
 
     private final WebClient webClient;
 
@@ -32,7 +31,7 @@ public class AskService {
     @Value("${web-client.user-list}")
     private String userListURI;
     public List<?> getUserInfoList(List<Long> userIdList) {
-        return userRedisService.getListOrSelect(
+        return userCacheService.getListOrSelect(
                 userIdList,
                 ()-> (List) webClient.webClient(userListURI, HttpMethod.POST, userIdList)
         );
@@ -40,7 +39,7 @@ public class AskService {
     public List<List<?>> getUserInfoListList(List<List<Long>> userIdList) {
         return shared.getListList(
                 userIdList,
-                userRedisService,
+                userCacheService,
                 (distinctIdList)->(List) webClient.webClient(userListURI, HttpMethod.POST, distinctIdList)
         );
     }
@@ -53,18 +52,18 @@ public class AskService {
     public Object validateYachtUser(Long yachtId, Long userId) {
         String uri = String.format(validateYachtURI, yachtId, userId);
 
-        Optional yachtUser = yachtRedisService.getOrSelect(
+        Object yachtUser = yachtCacheService.getOrSelect(
                 yachtId, userId,
-                ()-> Optional.of(webClient.webClient(uri, HttpMethod.GET, null))
+                ()-> webClient.webClient(uri, HttpMethod.GET, null)
         );
 
-        if(yachtUser.isEmpty())
+        if(yachtUser == null)
             throw new CustomException(ErrorCode.CONFLICT);
 
-        return yachtUser.get(); // yachtInfo
+        return yachtUser; // yachtInfo
     }
     public List<?> getYachtInfoList(List<Long> yachtIdList) {
-        return yachtRedisService.getListOrSelect(
+        return yachtCacheService.getListOrSelect(
                 yachtIdList,
                 ()->(List) webClient.webClient(gatewayURL+yachtListURI, HttpMethod.POST, yachtIdList)
         );
@@ -79,18 +78,18 @@ public class AskService {
     public Object validatePart(Long partId) {
         String uri = String.format(partInfoURI, partId);
 
-        Optional partDto = partRedisService.getOrSelect(
+        Object partDto = partCacheService.getOrSelect(
                 partId,
-                ()-> Optional.of(webClient.webClient(uri, HttpMethod.GET, null))
+                ()-> webClient.webClient(uri, HttpMethod.GET, null)
         );
 
-        if(partDto.isEmpty())
+        if(partDto == null)
             throw new CustomException(ErrorCode.CONFLICT);
 
-        return partDto.get();
+        return partDto;
     }
     public List<?> getPartInfoList(List<Long> partIdList) {
-        return (List) partRedisService.getListOrSelect(
+        return (List) partCacheService.getListOrSelect(
                 partIdList,
                 ()-> (List) webClient.webClient(gatewayURL + partListURI, HttpMethod.POST, partIdList)
         );
@@ -102,14 +101,14 @@ public class AskService {
         return (List<Long>) inMemoryUserCacheService.getOrSelect(
                 userId,
                 ()-> { throw new CustomException(ErrorCode.NOT_FOUND); }
-        ).get();
+        );
     }
 
     class Shared {
         public Shared() {}
         public List<List<?>> getListList(
                 List<List<Long>> idList,
-                RedisService redisService,
+                CacheService cacheService,
                 SelectWithDistinctIdList distinctSelect
         ) {
             List<Long> totalIdList = new ArrayList<>();
@@ -121,13 +120,13 @@ public class AskService {
             distinctIdList = totalIdList.stream().distinct().toList();
 
             // select distinctIdList (for caching All Data from Redis)
-            redisService.getListOrSelect(
+            cacheService.getListOrSelect(
                     distinctIdList,
                     ()->distinctSelect.select(distinctIdList)
             );
 
             // select Total List (from cached Data)
-            List totalDataList = redisService.getListOrSelect(
+            List totalDataList = cacheService.getListOrSelect(
                     totalIdList,
                     ()-> {throw new CustomException(ErrorCode.API_FAIL, "Redis Does Not Cached");}
             );
