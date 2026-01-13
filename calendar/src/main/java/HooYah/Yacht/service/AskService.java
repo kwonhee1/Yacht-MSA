@@ -26,7 +26,7 @@ public class AskService {
 
     @Value("${web-client.gateway}")
     private String gatewayURL;
-    private Shared shared;
+    private Shared shared = new Shared();
 
     // user
     @Value("${web-client.user-list}")
@@ -106,6 +106,7 @@ public class AskService {
     }
 
     class Shared {
+        public Shared() {}
         public List<List<?>> getListList(
                 List<List<Long>> idList,
                 RedisService redisService,
