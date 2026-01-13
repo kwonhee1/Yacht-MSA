@@ -4,14 +4,13 @@ import HooYah.Gateway.config.ApplicationConfig;
 import HooYah.Gateway.user.JWTConfig;
 import HooYah.Gateway.user.db.DBConfig;
 import HooYah.Gateway.gateway.handler.URIHandler;
-import HooYah.Gateway.locabalancer.conf.Config;
+import HooYah.Gateway.loadbalancer.conf.Config;
 import HooYah.Gateway.gateway.handler.FrontClientHandler;
 import HooYah.Gateway.gateway.handler.TokenHandler;
-import HooYah.Gateway.locabalancer.controller.LoadBalancerController;
+import HooYah.Gateway.loadbalancer.controller.LoadBalancerController;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -28,7 +27,16 @@ public class YachtApplication {
 
     private static final Logger log = LoggerFactory.getLogger(YachtApplication.class);
 
-    private final LoadBalancerController loadBalancerController = new  LoadBalancerController();
+    private final LoadBalancerController loadBalancerController;
+
+    public YachtApplication() {
+        Config config = Config.getInstance();
+
+        loadBalancerController = new LoadBalancerController(
+                config.getServerConfig().getServers(),
+                config.getServerConfig().getModules()
+        );
+    }
 
     public static void main(String[] args) {
         Config.getInstance();

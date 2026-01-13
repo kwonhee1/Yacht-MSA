@@ -1,11 +1,10 @@
 package HooYah.Gateway.gateway.handler;
 
 import HooYah.Gateway.gateway.AttributeConfig;
-import HooYah.Gateway.locabalancer.conf.Config;
-import HooYah.Gateway.locabalancer.conf.ServerConfig;
-import HooYah.Gateway.locabalancer.controller.LoadBalancerController;
-import HooYah.Gateway.locabalancer.domain.vo.Uri;
-import HooYah.Gateway.locabalancer.domain.vo.Url;
+import HooYah.Gateway.loadbalancer.conf.Config;
+import HooYah.Gateway.loadbalancer.conf.ServerConfig;
+import HooYah.Gateway.loadbalancer.controller.LoadBalancerController;
+import HooYah.Gateway.loadbalancer.domain.vo.Url;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -31,7 +30,8 @@ public class URIHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
         Url proxy = loadBalancerController.loadBalance(requestUri);
         String proxyHost = proxy.getHost().getHost();
         int proxyPort = proxy.getPort().getPort();
-        String proxyUri = proxy.getUri().toProxyUri(new Uri(requestUri));
+        // String proxyUri = proxy.getUri().toProxyUri(new Uri(requestUri));
+        String proxyUri = proxy.getUri().getUri();
 
         ctx.channel().attr(AttributeConfig.Host).set(proxyHost);
         ctx.channel().attr(AttributeConfig.Port).set(proxyPort);

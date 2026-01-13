@@ -18,7 +18,21 @@ servers:
     count: 1
 
 modules:
-  - match-uri: /part/
+  - match-uri:
+    - /calendar/
+    - /alarm/
+    services:
+      - name: calendar
+        server: mainServer
+        port: 9094
+    subs:
+      - name: part
+        server: sub
+        port: 8083
+
+  - match-uri:
+    - /part/
+    - /repair/
     services:
       - name: part
         server: mainServer
@@ -28,7 +42,8 @@ modules:
         server: sub
         port: 8082
 
-  - match-uri: /user/
+  - match-uri:
+    - /user/
     services:
       - name: user
         server: mainServer
@@ -38,7 +53,8 @@ modules:
         server: sub
         port: 8080
 
-  - match-uri: /yacht/
+  - match-uri:
+    - /yacht/
     services:
       - name: yacht
         server: mainServer

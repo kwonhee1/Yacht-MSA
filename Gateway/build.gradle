@@ -67,4 +67,11 @@ dependencies {
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-properties:2.15.2'
 
     implementation 'org.yaml:snakeyaml:2.0' // 이거 필수임?
+
+    testImplementation platform('org.junit:junit-bom:5.10.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
 }

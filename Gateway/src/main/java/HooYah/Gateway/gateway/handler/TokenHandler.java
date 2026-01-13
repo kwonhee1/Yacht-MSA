@@ -53,7 +53,7 @@ public class TokenHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
         logger.info("userId : " + userId);
         msg.headers().set("UserId", userId);
-        msg.headers().set("Authorization", ""); // can not set null : NullPointerException
+        // msg.headers().set("Authorization", ""); // erase used Authorization (by proxy api, remain used token)
     }
 
     private Optional<Long> getUserIdFromToken(String token) {
