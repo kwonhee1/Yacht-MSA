@@ -1,6 +1,5 @@
 package HooYah.Redis.template;
 
-import HooYah.Redis.RedisValue;
 import HooYah.Redis.connection.Connection;
 import HooYah.Redis.connection.Pipeline;
 import HooYah.Redis.connection.SaveSecond;
@@ -8,14 +7,13 @@ import HooYah.Redis.pool.Pool;
 import java.util.List;
 
 /*
-    set 할 때는 String 값으로
-    get 할 때는 RedisValue로 반환
+    Redis / InMemory를 사용하기 위한 class, Connection을 좀 더 편리하게 사용하기 위함
  */
-public class RedisTemplate implements Template {
+public class TemplateImpl implements Template {
 
     private final Pool pool;
 
-    public RedisTemplate(Pool pool) {
+    public TemplateImpl(Pool pool) {
         this.pool = pool;
     }
 
@@ -40,28 +38,21 @@ public class RedisTemplate implements Template {
     }
 
     @Override
-    public RedisValue get(String key, SaveSecond second) {
+    public String get(String key, SaveSecond second) {
         try (Connection connection = pool.getConnection()) {
-            String result = connection.get(key, second);
-            return new RedisValue(result);
+            return connection.get(key, second);
         }
     }
 
     @Override
-    public List<RedisValue> getList(List<String> keyList, SaveSecond second) {
+    public List<String> getList(List<String> keyList, SaveSecond second) {
         try (Pipeline pipeline = pool.getConnection().pipeline()) {
             keyList.forEach(key -> pipeline.get(key, second));
 
-            List<String> result = pipeline.sync();
-
-            return result.stream().map(RedisValue::new).toList();
+            return pipeline.sync();
         }
     }
 
-    @Override
-    public void remove(String key, SaveSecond second) {
-        this.add(key, RedisValue.NULL, second);
-    }
 }
 
 interface Template {
@@ -70,10 +61,8 @@ interface Template {
 
     void addAll(List<String> keyList, List<String> valueList, SaveSecond second);
 
-    RedisValue get(String key, SaveSecond second);
+    String get(String key, SaveSecond second);
 
-    List<RedisValue> getList(List<String> keyList, SaveSecond second);
-
-    void remove(String key, SaveSecond second);
+    List<String> getList(List<String> keyList, SaveSecond second);
 
 }
