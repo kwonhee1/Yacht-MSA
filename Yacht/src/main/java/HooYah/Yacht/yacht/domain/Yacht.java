@@ -1,5 +1,6 @@
 package HooYah.Yacht.yacht.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -35,6 +36,7 @@ public class Yacht {
     private String nickName;
 
     @OneToMany(mappedBy = "yacht", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @JsonIgnore
     private List<YachtUser> yachtUser;
 
     public void updateName(String name) {

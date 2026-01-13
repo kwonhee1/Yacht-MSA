@@ -1,13 +1,7 @@
 package HooYah.Gateway.gateway.handler;
 
 import HooYah.Gateway.gateway.AttributeConfig;
-import HooYah.Gateway.locabalancer.conf.Config;
-import HooYah.Gateway.locabalancer.conf.ServerConfig;
-import HooYah.Gateway.locabalancer.domain.vo.Uri;
-import HooYah.Gateway.locabalancer.domain.vo.Url;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.Unpooled;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
