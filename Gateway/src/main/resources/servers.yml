@@ -25,6 +25,11 @@ modules:
       - name: calendar
         server: mainServer
         port: 9094
+
+        healthy:
+          method: POST
+          uri: /containers/{container_name}
+          # http://localhost:2375/containers/my_container_name/json
     subs:
       - name: part
         server: sub

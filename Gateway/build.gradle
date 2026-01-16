@@ -61,7 +61,7 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
     implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
-    // jackson for yaml mapping
+    // jackson for yaml mapping + response json mapping
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.15.2'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-properties:2.15.2'

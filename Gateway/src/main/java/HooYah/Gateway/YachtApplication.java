@@ -8,14 +8,17 @@ import HooYah.Gateway.loadbalancer.conf.Config;
 import HooYah.Gateway.gateway.handler.FrontClientHandler;
 import HooYah.Gateway.gateway.handler.TokenHandler;
 import HooYah.Gateway.loadbalancer.controller.LoadBalancerController;
+import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.logging.LogLevel;
@@ -46,11 +49,11 @@ public class YachtApplication {
     }
 
     private void run(int port) {
-        EventLoopGroup group = new NioEventLoopGroup();
+        EventLoopGroup serverGroup = new NioEventLoopGroup();
 
         try {
-            ServerBootstrap b = new ServerBootstrap(); // (2)
-            b.group(group)
+            ServerBootstrap serverBootstrap = new ServerBootstrap(); // (2)
+            serverBootstrap.group(serverGroup)
                     .channel(NioServerSocketChannel.class) // (3)
                     .handler(new LoggingHandler(LogLevel.INFO))
                     .childHandler(new ChannelInitializer<SocketChannel>() { // (4)
@@ -70,13 +73,13 @@ public class YachtApplication {
                     // .childOption(ChannelOption.AUTO_READ, false)
             ;
 
-            ChannelFuture f = b.bind(port).sync();
+            ChannelFuture f = serverBootstrap.bind(port).sync();
             f.channel().closeFuture().sync();
         }  catch (Exception e) {
             e.printStackTrace();
         }
         finally {
-            group.shutdownGracefully();
+            serverGroup.shutdownGracefully();
         }
     }
 }
