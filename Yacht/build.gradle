@@ -14,6 +14,16 @@ java {
 	}
 }
 
+bootJar {
+    enabled = true
+    archiveFileName = 'yacht.jar'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+jar {
+    enabled = false
+}
+
 configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
@@ -40,6 +50,10 @@ dependencies {
 
     // utill
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // Redis
+    implementation files('libs/Redis.jar')
+    implementation files('libs/Common.jar') 
 
 }
 

@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  msa-gateway:
+    image: eclipse-temurin:21-jdk-jammy
+    container_name: msa-gateway
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./gateway/gateway.jar:/app.jar
+    command: ["java", "-jar", "app.jar"]
+    networks:
+      - mysql-network
+
+  msa-user:
+    image: eclipse-temurin:21-jdk-jammy
+    container_name: msa-user
+    ports:
+      - "9091:9091"
+    volumes:
+      - ./user/user.jar:/app.jar
+      - ./user/.env:/.env
+    command: ["java", "-jar", "app.jar"]
+    networks:
+      - mysql-network
+
+  msa-yacht:
+    image: eclipse-temurin:21-jdk-jammy
+    container_name: msa-yacht
+    ports:
+      - "9092:9092"
+    volumes:
+      - ./yacht/yacht.jar:/app.jar
+      - ./yacht/.env:/.env
+    command: ["java", "-jar", "app.jar"]
+    networks:
+      - mysql-network
+
+  msa-part:
+    image: eclipse-temurin:21-jdk-jammy
+    container_name: msa-part
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./part/part.jar:/app.jar
+      - ./part/.env:/.env
+    command: ["java", "-jar", "app.jar"]
+    networks:
+      - mysql-network
+
+  msa-calendar:
+    image: eclipse-temurin:21-jdk-jammy
+    container_name: msa-calendar
+    ports:
+      - "9094:9094"
+    volumes:
+      - ./calendar/calendar.jar:/app.jar
+      - ./calendar/.env:/.env
+    command: ["java", "-jar", "app.jar"]
+    networks:
+      - mysql-network
+
+  msa-nginx:
+    image: lkh8033/nextlevel-nginx:latest
+    container_name: msa-nginx
+    ports:
+      - "9443:9443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
+    networks:
+      - mysql-network
+
+networks:
+  mysql-network:
+    external: true
+    driver: bridge

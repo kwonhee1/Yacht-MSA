@@ -1,6 +1,7 @@
 servers:
   - name: mainServer
-    host: localhost
+    host: 222.237.95.115
+#     192.168.0.2
     protocol: http
     docker:
       ca: /path/ca.pem

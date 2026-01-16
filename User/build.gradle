@@ -17,6 +17,7 @@ java {
 bootJar {
     enabled = true
     archiveFileName = 'user.jar'
+    mainClass = 'HooYah.User.YachtApplication'
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 

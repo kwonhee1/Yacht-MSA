@@ -46,7 +46,7 @@ redis:
     part: Part
 
 web-client:
-  gateway: http://localhost:8443
+  gateway: ${GATEWAY_URL}
 
   user-list: /user/proxy/user-list
   user-token-list: /user/proxy/user-token

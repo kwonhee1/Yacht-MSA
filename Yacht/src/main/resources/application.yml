@@ -32,3 +32,9 @@ redis:
 
   module:
     user: USER
+
+web-client:
+  gateway: ${GATEWAY_URL}
+
+  user-list: /user/proxy/user-list
+  part-create: /part/proxy/create
