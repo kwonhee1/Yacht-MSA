@@ -52,8 +52,8 @@ public class ProxyController {
         return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", yachtRepository.findAllById(yachtIdList)));
     }
 
-    @PostMapping
-    public ResponseEntity getYachtUserList(@RequestBody List<Long> userIdList) {
+    @PostMapping("/yacht-user")
+    public ResponseEntity getYachtUserIdList(@RequestBody List<Long> userIdList) {
         return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", yachtUserService.getYachtUserIdList(userIdList)));
     }
 

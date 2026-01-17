@@ -1,22 +1,20 @@
 package HooYah.Yacht.yacht.controller;
 
+import HooYah.Redis.CacheService;
 import HooYah.Yacht.common.SuccessResponse;
 import HooYah.Yacht.common.excetion.CustomException;
 import HooYah.Yacht.common.excetion.ErrorCode;
 import HooYah.Yacht.yacht.dto.request.InviteYachtDto;
 import HooYah.Yacht.yacht.dto.response.ResponseYachtDto;
 import HooYah.Yacht.yacht.service.YachtUserService;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import HooYah.Yacht.webclient.WebClient;
+import HooYah.Yacht.webclient.WebClient.HttpMethod;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -33,8 +31,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class YachtUserController {
 
     private final YachtUserService yachtUserService;
-    private final HttpClient httpClient;
-    private final ObjectMapper objectMapper;
+    private final WebClient webClient;
+    private final CacheService userCacheService;
+
+    @Value("${web-client.gateway}")
+    private String gatewayURL;
+
+    @Value("${web-client.user-list}")
+    private String userListURI;
 
     @GetMapping
     public ResponseEntity getYachtList(HttpServletRequest request) {
@@ -46,22 +50,15 @@ public class YachtUserController {
     public ResponseEntity getYachtUserList(
             HttpServletRequest request ,
             @PathVariable("yachtId") Long yachtId
-    ) throws IOException, InterruptedException {
+    ) {
         List<Long> yachtUserIdList = yachtUserService.yachtUserIdList(yachtId, getUserId(request)); // yacht user 들의 id list
 
-        String requestBody = objectMapper.writeValueAsString(yachtUserIdList);
+        List<?> userList = userCacheService.getListOrSelect(
+                yachtUserIdList,
+                () -> (List) webClient.webClient(gatewayURL + userListURI, HttpMethod.POST, yachtUserIdList)
+        );
 
-        // user api 호출
-        HttpRequest httpRequest = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:8443/user/proxy/user-list"))
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-                .build();
-        HttpResponse<String> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-
-        Map response = objectMapper.readValue(httpResponse.body(), Map.class);
-
-        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", Map.of("userList", response.get("response"))));
+        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", Map.of("userList", userList)));
     }
 
     @GetMapping("/invite")

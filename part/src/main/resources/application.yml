@@ -43,7 +43,7 @@ redis:
     user: User
 
 web-client:
-  gateway: http://localhost:8443
+  gateway: ${GATEWAY_URL}
 
   user-list: /user/proxy/user-list
   yacht: /yacht/proxy/validate-yacht?yachtId=%d

@@ -10,6 +10,7 @@ import HooYah.Yacht.repair.repository.RepairRepository;
 import HooYah.Yacht.webclient.WebClient;
 import HooYah.Yacht.webclient.WebClient.HttpMethod;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -71,6 +72,23 @@ public class RepairService {
         repairRepository.save(repair);
 
         updateCalenderAndAlarm(part);
+    }
+
+    // used from addPartList (proxy api)
+    public void addRepairList(List<Part> partList, List<OffsetDateTime> repairDateList) {
+        List<Repair> repairList = new ArrayList<>();
+
+        for(int i = 0; i < repairDateList.size(); i++){
+            repairList.add(Repair
+                    .builder()
+                    .part(partList.get(i))
+                    .repairDate(repairDateList.get(i))
+                    .content("auto generated")
+                    .build()
+            );
+        }
+
+        repairRepository.saveAll(repairList);
     }
 
     @Transactional

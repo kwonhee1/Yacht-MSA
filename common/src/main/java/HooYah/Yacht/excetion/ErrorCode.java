@@ -9,7 +9,8 @@ public enum ErrorCode {
     CONFLICT(409, "conflict"),
     BAD_REQUEST(400, "bad request"),
 
-    API_FAIL(500, "proxy request fail : %s")
+    API_FAIL(500, "proxy request fail : %s"),
+    JACKSON_EXCEPTION(406, "jackson exception %s")
     ;
 
     public int statusCode;

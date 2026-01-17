@@ -1,5 +1,6 @@
 package HooYah.Yacht.excetion;
 
+import com.fasterxml.jackson.core.JacksonException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,11 @@ public class CustomExceptionHandler {
     public ResponseEntity handleCustomException(CustomException e) {
         e.printStackTrace();
         return ResponseEntity.status(e.statusCode).body(e.getMessage());
+    }
+
+    @ExceptionHandler(JacksonException.class)
+    public ResponseEntity handleJacksonException(JacksonException e) {
+        return ResponseEntity.status(ErrorCode.JACKSON_EXCEPTION.statusCode).body(String.format(ErrorCode.JACKSON_EXCEPTION.message, e.getMessage()));
     }
 
     @ExceptionHandler(MissingRequestHeaderException.class)
