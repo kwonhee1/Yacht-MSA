@@ -5,20 +5,20 @@ import com.fasterxml.jackson.dataformat.javaprop.JavaPropsFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Map;
-import java.util.Properties;
-import java.util.Scanner;
 
 public enum ConfigFile {
-    APPLICATION_PROPERTIES("application.properties", FileType.PROPERTIES),
-    SERVER_YML("servers.yml",  FileType.YML),
+    APPLICATION_PROPERTIES(FileDirect.ROOT, ".env", FileType.PROPERTIES),
+    SERVER_YML(FileDirect.ROOT, "servers.yml",  FileType.YML),
     ;
 
     private Map content;
     private FileType fileType;
 
-    ConfigFile(String fileDirect, FileType fileType) {
-        this.content = FileReader.readFile(fileDirect, fileType);
+    ConfigFile(FileDirect fileDirect, String fileName, FileType fileType) {
+        this.content = FileReader.readFile(fileDirect, fileName, fileType);
         this.fileType = fileType;
     }
 
@@ -38,22 +38,42 @@ public enum ConfigFile {
         final static ObjectMapper propertyMapper = new ObjectMapper(new JavaPropsFactory());
         final static ObjectMapper ymlMapper = new ObjectMapper(new YAMLFactory());
 
-        private static Map readFile(String fileDirect,FileType fileType) {
-            try (InputStream inputStream = ApplicationConfig.class
-                    .getClassLoader()
-                    .getResourceAsStream(fileDirect)) {
+        private static Map readFile(FileDirect fileDirect, String fileName, FileType fileType) {
+            try (InputStream inputStream = fileDirect.getInputStream(fileName)) {
 
                 if (inputStream == null) {
-                    throw new IllegalArgumentException("Resource not found: " + fileDirect);
+                    throw new IllegalArgumentException("Resource not found: " + fileName);
                 }
 
+                // public <T> T readValue(File src, Class<T> valueType)
                 if(fileType.equals(FileType.PROPERTIES))
                     return propertyMapper.readValue(inputStream, Map.class);
                 else
                     return ymlMapper.readValue(inputStream, Map.class);
             } catch (IOException e) {
-                throw new ReadFileException(fileDirect, e);
+                throw new ReadFileException(fileName, e);
             }
+        }
+    }
+
+    enum FileDirect {
+        ROOT,
+        RESOURCE; // class path root
+
+        private InputStream getInputStream(String fileName) {
+            try {
+                if (this.equals(FileDirect.ROOT))
+                    return Files.newInputStream(Paths.get(fileName));
+                // return new File(fileName).toURI().toURL().openStream();
+                if (this.equals(FileDirect.RESOURCE))
+                    return ApplicationConfig.class
+                            .getClassLoader()
+                            .getResourceAsStream(fileName);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            throw new RuntimeException("Config.FileDirect :: getInputStream()");
         }
     }
 }
