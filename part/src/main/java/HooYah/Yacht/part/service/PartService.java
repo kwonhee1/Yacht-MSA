@@ -13,8 +13,6 @@ import HooYah.Yacht.repair.repository.RepairRepository;
 import HooYah.Yacht.repair.service.RepairService;
 import HooYah.Yacht.webclient.WebClient;
 import HooYah.Yacht.webclient.WebClient.HttpMethod;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -33,7 +31,6 @@ public class PartService {
 
     private final CacheService yachtCacheService;
     private final WebClient webClient;
-    private final RepairService repairService;
 
     @Value("${web-client.gateway}")
     private String gatewayURL;
@@ -86,7 +83,7 @@ public class PartService {
     }
 
     @Transactional
-    public void addPartList(Long yachtId, List<AddPartDto> dtoList) {
+    public List<Part> addPartList(Long yachtId, List<AddPartDto> dtoList) {
         List<Part> createPartList = dtoList
                 .stream()
                 .map((dto) -> Part
@@ -100,22 +97,7 @@ public class PartService {
                 )
                 .toList();
 
-        createPartList = partRepository.saveAll(createPartList);
-
-        // add repair if exist
-        List<Part> repairAddPartList = new ArrayList<>();
-        List<OffsetDateTime> repairAddRepairList = new ArrayList<>();
-
-        for(int i = 0; i < createPartList.size(); i++) {
-            if(dtoList.get(i).getLastRepair() != null) { // 이거 생각보다 위험하다 :: repair에 필요한 값이 추가 된다면 Part값이 수정되어야함 --> 다른 domain의 값이 dto에 침범함
-                OffsetDateTime repairDate = dtoList.get(i).getLastRepair();
-
-                repairAddRepairList.add(repairDate);
-                repairAddPartList.add(createPartList.get(i));
-            }
-        }
-
-        repairService.addRepairList(repairAddPartList, repairAddRepairList);
+        return partRepository.saveAll(createPartList);
     }
 
     @Transactional

@@ -1,5 +1,6 @@
 package HooYah.Yacht.part.controller;
 
+import HooYah.Yacht.part.service.CreatePartService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import HooYah.Yacht.SuccessResponse;
 import HooYah.Yacht.excetion.CustomException;
@@ -33,6 +34,7 @@ public class PartProxyController {
     private final RepairRepository repairRepository;
     private final PartService partService;
     private final ObjectMapper objectMapper;
+    private final CreatePartService createPartService;
 
     @GetMapping("{partId}")
     public ResponseEntity getPartById(@RequestParam("partId") Long partId) {
@@ -71,7 +73,7 @@ public class PartProxyController {
             return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.CONFLICT.value(), "fail", null));
         }
 
-        partService.addPartList(yachtId, dtoList);
+        createPartService.addPartList(yachtId, dtoList);
 
         return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", null));
     }
