@@ -1,7 +1,7 @@
 package HooYah.Yacht.conf;
 
+import HooYah.Yacht.webclient.TimeZone;
 import HooYah.Yacht.webclient.WebClient;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -10,7 +10,7 @@ public class WebClientConfig {
 
     @Bean
     public WebClient createClient() {
-        return new WebClient(new ObjectMapper(), 20);
+        return new WebClient(TimeZone.SEOUL, 20);
     }
 
 }

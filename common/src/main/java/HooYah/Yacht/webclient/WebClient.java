@@ -4,6 +4,7 @@ import HooYah.Yacht.excetion.CustomException;
 import HooYah.Yacht.excetion.ErrorCode;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -17,9 +18,9 @@ public class WebClient {
 
     private final int connectionTimeoutCount;
 
-    public WebClient(ObjectMapper objectMapper, int connectionTimeoutCount) {
+    public WebClient(TimeZone obejctMapperTimeZone, int connectionTimeoutCount) {
+        Mapper.setObjectMapper(obejctMapperTimeZone);
         this.connectionTimeoutCount = connectionTimeoutCount;
-        Mapper.objectMapper = objectMapper;
     }
 
     public HttpClient createClient() {
@@ -64,6 +65,12 @@ public class WebClient {
 
     class Mapper {
         private static ObjectMapper objectMapper;
+
+        private static void setObjectMapper(TimeZone timeZone) {
+            objectMapper = new ObjectMapper();
+            objectMapper.registerModule(new JavaTimeModule());
+            objectMapper.setTimeZone(timeZone.getTimeZone());
+        }
 
         public static String toString(Object value) {
             try {
