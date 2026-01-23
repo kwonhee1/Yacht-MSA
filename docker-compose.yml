@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.9'
 
 services:
   msa-gateway:
@@ -13,6 +13,8 @@ services:
     command: ["java", "-jar", "app.jar"]
     networks:
       - mysql-network
+    mem_limit: 256m
+    cpus: 0.2
 
   msa-user:
     image: eclipse-temurin:21-jdk-jammy
@@ -25,6 +27,8 @@ services:
     command: ["java", "-jar", "app.jar"]
     networks:
       - mysql-network
+    mem_limit: 256m
+    cpus: 0.2
 
   msa-yacht:
     image: eclipse-temurin:21-jdk-jammy
@@ -37,6 +41,8 @@ services:
     command: ["java", "-jar", "app.jar"]
     networks:
       - mysql-network
+    mem_limit: 256m
+    cpus: 0.2
 
   msa-part:
     image: eclipse-temurin:21-jdk-jammy
@@ -49,6 +55,8 @@ services:
     command: ["java", "-jar", "app.jar"]
     networks:
       - mysql-network
+    mem_limit: 256m
+    cpus: 0.2
 
   msa-calendar:
     image: eclipse-temurin:21-jdk-jammy
@@ -61,6 +69,8 @@ services:
     command: ["java", "-jar", "app.jar"]
     networks:
       - mysql-network
+    mem_limit: 256m
+    cpus: 0.2
 
   msa-nginx:
     image: lkh8033/nextlevel-nginx:latest
@@ -71,6 +81,8 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
     networks:
       - mysql-network
+    mem_limit: 256m
+    cpus: 0.2
 
 networks:
   mysql-network:
