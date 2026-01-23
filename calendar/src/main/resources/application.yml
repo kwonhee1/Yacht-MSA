@@ -19,7 +19,7 @@ spring:
         jdbc:
           time_zone: UTC
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
   ai:
     google:
       genai:
@@ -53,6 +53,7 @@ web-client:
   
   validate-yacht: /yacht/proxy/validate-yacht?yachtId=%d
   yacht-list: /yacht/proxy
+  yacht-id-list: /yacht/proxy/get-yacht-list?userId=%d
   yacht-user: /yacht/proxy/validate-user?yachtId=%d&userId=%d
   yacht-user-list: /yacht/proxy/yacht-user
 

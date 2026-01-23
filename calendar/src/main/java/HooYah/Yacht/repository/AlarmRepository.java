@@ -13,7 +13,7 @@ public interface AlarmRepository extends JpaRepository<Alarm, Long> {
 
     @Query("select a "
             + "from Alarm a "
-            + "where a.yachtId in :yachIds "
+            + "where a.yachtId in :yachtIds "
             + "order by a.date asc")
     List<Alarm> findAllByYachtIds(@Param("yachtIds") List<Long> yachtIds, OffsetDateTime date);
 

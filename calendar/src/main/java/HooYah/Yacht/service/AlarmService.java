@@ -72,7 +72,7 @@ public class AlarmService {
                 gatewayURL + partListNameURI, 
                 HttpMethod.POST, 
                 partIdList
-        );
+        ).toList();
         if(allPartNameList == null || allPartNameList.size() != partIdList.size())
             throw new CustomException(ErrorCode.API_FAIL, "");
         return allPartNameList;
@@ -84,7 +84,7 @@ public class AlarmService {
                 gatewayURL + yachtUserListURI, 
                 HttpMethod.POST, 
                 yachtIdList
-        );
+        ).toList();
         if(userIdList == null || userIdList.size() != yachtIdList.size())
             throw new CustomException(ErrorCode.API_FAIL, "");
 
@@ -98,7 +98,7 @@ public class AlarmService {
                 gatewayURL + userTokenListURI, 
                 HttpMethod.POST, 
                 flatUserIdList
-        );
+        ).toList();
         if(flatUserTokenList == null || flatUserTokenList.size() != flatUserIdList.size())
             throw new CustomException(ErrorCode.API_FAIL, "");
 

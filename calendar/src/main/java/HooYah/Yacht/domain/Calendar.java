@@ -2,6 +2,7 @@ package HooYah.Yacht.domain;
 
 import HooYah.Yacht.excetion.CustomException;
 import HooYah.Yacht.excetion.ErrorCode;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -19,6 +20,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Transient;
 
 @Entity
 @Table(name = "calendar")
@@ -62,6 +64,10 @@ public class Calendar {
     @OneToMany(mappedBy = "calendar", cascade = {CascadeType.REMOVE,  CascadeType.PERSIST}, orphanRemoval = true)
     private List<CalendarUser> calendarUsers;
 
+    @JsonIgnore
+    @Transient
+    private boolean completedNow = false;
+
     public void setCalendarUsers(List<Long> userIdList) {
         List<CalendarUser> calendarUserList = userIdList
                 .stream()
@@ -92,18 +98,23 @@ public class Calendar {
             Long partId,
             String content, String review
     ) {
-        if(partId != null) {
-            if(this.completed)
-                throw new CustomException(ErrorCode.CONFLICT); // can not change part after complete!
-
-            this.partId = partId;
-        }
+        updatePartId(partId);
 
         if(content != null && !content.isEmpty())
             this.content = content;
 
         if(review != null && !review.isEmpty())
             this.review = review;
+    }
+
+    private void updatePartId(Long partId) {
+        if(partId == null || partId == this.partId)
+            return; // nothing to chage
+
+        if(this.completed)
+            throw new CustomException(ErrorCode.CONFLICT); // can not change part after complete!
+
+        this.partId = partId;
     }
 
     public void updateDate(OffsetDateTime startDate, OffsetDateTime endDate) {
@@ -121,10 +132,15 @@ public class Calendar {
             throw new CustomException(ErrorCode.CONFLICT);
     }
 
-    public void setCompletedTrue() {
+    public void updateComplete(boolean isCompleted) {
+        if(!isCompleted)
+            return;
+
         if(this.review == null)
             throw new CustomException(ErrorCode.CONFLICT);
+
         this.completed = true;
+        this.completedNow = true;
     }
 
     public static Builder builder() {
@@ -144,6 +160,8 @@ public class Calendar {
         private Long partId;
         private Long yachtId;
 
+        private boolean isCompleted;
+
         public Calendar buildByUser() {
             return build(true);
         }
@@ -158,14 +176,19 @@ public class Calendar {
             if(type.equals(CalendarType.PART) && partId == null)
                 throw new CustomException(ErrorCode.CONFLICT);
 
-            return new Calendar(
+            Calendar createdCalendar = new Calendar(
                     id,
                     type, partId, startDate, endDate, yachtId,
                     false, // completed
                     byUser, // byUser
                     content, review,
-                    null // List<CalendarUser>
+                    null, // List<CalendarUser>
+                    false // isCompleted
             );
+
+            createdCalendar.updateComplete(isCompleted);
+
+            return createdCalendar;
         }
 
         // builder functions ...
@@ -192,6 +215,9 @@ public class Calendar {
         }
         public Builder yachtId(Long yachtId) {
             this.yachtId = yachtId; return this;
+        }
+        public Builder isCompleted(boolean isCompleted) {
+            this.isCompleted = isCompleted; return this;
         }
 
     }

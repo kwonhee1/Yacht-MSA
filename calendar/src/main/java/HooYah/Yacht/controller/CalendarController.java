@@ -13,6 +13,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,9 +22,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
-@RestController
+@Controller
 @RequiredArgsConstructor
 @RequestMapping("/calendar/api")
 public class CalendarController {
@@ -46,7 +46,8 @@ public class CalendarController {
     @GetMapping("/{id}")
     public ResponseEntity<SuccessResponse> getCalendar(
             @PathVariable Long id,
-            HttpServletRequest request) {
+            HttpServletRequest request
+    ) {
         Long userId = getUserId(request);
         CalendarInfo response = calendarService.getCalendar(id, userId);
         return ResponseEntity.ok(new SuccessResponse(HttpStatus.OK.value(), "success", response));
@@ -54,7 +55,6 @@ public class CalendarController {
 
     @GetMapping
     public ResponseEntity<SuccessResponse> getCalendars(
-            @RequestParam(value = "partId", required = false) Long partId, // api 분리 필요 (아니 partId값이 있는 경우는 또 뭐임?)
             HttpServletRequest request
     ) {
         Long userId = getUserId(request);

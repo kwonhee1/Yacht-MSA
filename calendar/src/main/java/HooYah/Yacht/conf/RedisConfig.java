@@ -4,6 +4,7 @@ import HooYah.Redis.Cache;
 import HooYah.Redis.CacheService;
 import HooYah.Redis.pool.Pool;
 import jakarta.annotation.PostConstruct;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -62,9 +63,9 @@ public class RedisConfig {
     }
 
     @Bean
-    public CacheService inMemoryUserCacheService () {
+    public CacheService<List> inMemoryUserCacheService () {
         // key = {Category}+{UserId}, value = List<Long :: yachtId>
-        return Cache.cacheService("UserCache", inMemoryConnectionPool);
+        return Cache.cacheService("UserCache", inMemoryConnectionPool, List.class);
     }
 
 }

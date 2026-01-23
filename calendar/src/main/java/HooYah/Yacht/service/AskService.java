@@ -19,7 +19,7 @@ public class AskService {
     private final CacheService yachtCacheService;
     private final CacheService partCacheService;
 
-    private final CacheService inMemoryUserCacheService;
+    private final CacheService<List> inMemoryUserCacheService;
 
     private final WebClient webClient;
 
@@ -30,17 +30,18 @@ public class AskService {
     // user
     @Value("${web-client.user-list}")
     private String userListURI;
+
     public List<?> getUserInfoList(List<Long> userIdList) {
         return userCacheService.getListOrSelect(
                 userIdList,
-                ()-> (List) webClient.webClient(userListURI, HttpMethod.POST, userIdList)
+                ()-> (List) webClient.webClient(gatewayURL + userListURI, HttpMethod.POST, userIdList).toList()
         );
     }
     public List<List<?>> getUserInfoListList(List<List<Long>> userIdList) {
         return shared.getListList(
                 userIdList,
                 userCacheService,
-                (distinctIdList)->(List) webClient.webClient(userListURI, HttpMethod.POST, distinctIdList)
+                (distinctIdList)-> webClient.webClient(gatewayURL + userListURI, HttpMethod.POST, distinctIdList).toList()
         );
     }
 
@@ -50,11 +51,11 @@ public class AskService {
     @Value("${web-client.yacht-list}")
     private String yachtListURI;
     public Object validateYachtUser(Long yachtId, Long userId) {
-        String uri = String.format(validateYachtURI, yachtId, userId);
+        String uri = String.format(gatewayURL + validateYachtURI, yachtId, userId);
 
         Object yachtUser = yachtCacheService.getOrSelect(
                 yachtId, userId,
-                ()-> webClient.webClient(uri, HttpMethod.GET, null)
+                ()-> webClient.webClient(uri, HttpMethod.GET, null).toMap()
         );
 
         if(yachtUser == null)
@@ -65,22 +66,22 @@ public class AskService {
     public List<?> getYachtInfoList(List<Long> yachtIdList) {
         return yachtCacheService.getListOrSelect(
                 yachtIdList,
-                ()->(List) webClient.webClient(gatewayURL+yachtListURI, HttpMethod.POST, yachtIdList)
+                ()->(List) webClient.webClient(gatewayURL+yachtListURI, HttpMethod.POST, yachtIdList).toList()
         );
     }
 
     // part
     @Value("${web-client.part-info}")
     private String partInfoURI;
-    @Value("${web-client.part-list")
+    @Value("${web-client.part-list}")
     private String partListURI;
 
     public Object validatePart(Long partId) {
-        String uri = String.format(partInfoURI, partId);
+        String uri = String.format(gatewayURL + partInfoURI, partId);
 
         Object partDto = partCacheService.getOrSelect(
                 partId,
-                ()-> webClient.webClient(uri, HttpMethod.GET, null)
+                ()-> webClient.webClient(uri, HttpMethod.GET, null).toMap()
         );
 
         if(partDto == null)
@@ -91,16 +92,19 @@ public class AskService {
     public List<?> getPartInfoList(List<Long> partIdList) {
         return (List) partCacheService.getListOrSelect(
                 partIdList,
-                ()-> (List) webClient.webClient(gatewayURL + partListURI, HttpMethod.POST, partIdList)
+                ()-> (List) webClient.webClient(gatewayURL + partListURI, HttpMethod.POST, partIdList).toList()
         );
     }
 
-    // inMemory
+    @Value("${web-client.yacht-id-list}")
+    private String yachtIdListURI;
+
     public List<Long> yachtListInMemory(Long userId) {
         // get yacht list (관리하는 모든 yacht List 조회)
-        return (List<Long>) inMemoryUserCacheService.getOrSelect(
+        String uri = String.format(gatewayURL + yachtIdListURI, userId);
+        return inMemoryUserCacheService.getOrSelect(
                 userId,
-                ()-> { throw new CustomException(ErrorCode.NOT_FOUND); }
+                ()-> (List<Long>) webClient.webClient(uri, HttpMethod.GET, null).toLongList()
         );
     }
 
