@@ -18,4 +18,6 @@ public interface YachtUserRepository extends JpaRepository<YachtUser,Integer> {
     @Query("select yu.yacht from YachtUser yu where yu.yacht.id = :yachtId and yu.userId = :userId")
     Optional<Yacht> findYacht(@Param("yachtId") Long yachtId, @Param("userId") Long userId);
 
+    @Query("select yu.yacht from YachtUser yu where yu.userId = :userId")
+    List<Yacht> findAllYachtByUserId(Long userId);
 }

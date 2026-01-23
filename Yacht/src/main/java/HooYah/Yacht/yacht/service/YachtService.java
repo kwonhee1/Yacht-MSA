@@ -1,7 +1,7 @@
 package HooYah.Yacht.yacht.service;
 
-import HooYah.Yacht.common.excetion.CustomException;
-import HooYah.Yacht.common.excetion.ErrorCode;
+import HooYah.Yacht.excetion.CustomException;
+import HooYah.Yacht.excetion.ErrorCode;
 import HooYah.Yacht.yacht.domain.Yacht;
 import HooYah.Yacht.yacht.dto.request.CreateYachtDto;
 import HooYah.Yacht.yacht.dto.request.CreateYachtDto.YachtInfo;

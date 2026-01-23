@@ -1,8 +1,9 @@
 package HooYah.Yacht.yacht.controller;
 
-import HooYah.Yacht.common.SuccessResponse;
-import HooYah.Yacht.common.excetion.CustomException;
-import HooYah.Yacht.common.excetion.ErrorCode;
+import HooYah.Yacht.SuccessResponse;
+import HooYah.Yacht.excetion.CustomException;
+import HooYah.Yacht.excetion.ErrorCode;
+import HooYah.Yacht.util.ListUtil;
 import HooYah.Yacht.yacht.domain.Yacht;
 import HooYah.Yacht.yacht.repository.YachtRepository;
 import HooYah.Yacht.yacht.repository.YachtUserRepository;
@@ -33,7 +34,7 @@ public class ProxyController {
         Yacht yacht = yachtRepository.findById(yachtId).orElseThrow(
                 ()->new CustomException(ErrorCode.NOT_FOUND)
         );
-        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", yacht));
+        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", yacht));
     }
 
     @GetMapping("/validate-user")
@@ -44,17 +45,28 @@ public class ProxyController {
         Yacht yacht = yachtUserRepository.findYacht(yachtId, userId).orElseThrow(
                 ()->new CustomException(ErrorCode.NOT_FOUND)
         );
-        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", yacht));
+        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", yacht));
     }
 
     @PostMapping
     public ResponseEntity getYachtList(@RequestBody List<Long> yachtIdList) {
-        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", yachtRepository.findAllById(yachtIdList)));
+        List<Yacht> yachtList = yachtRepository.findAllById(yachtIdList);
+        List<Yacht> sortedYachtList = ListUtil.sortByRequestOrder(yachtIdList, yachtList, Yacht::getId);
+        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", sortedYachtList));
     }
 
     @PostMapping("/yacht-user")
     public ResponseEntity getYachtUserIdList(@RequestBody List<Long> userIdList) {
-        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", yachtUserService.getYachtUserIdList(userIdList)));
+        List<List<Long>> selectedList = yachtUserService.getYachtUserIdList(userIdList);
+        // already sorted!
+        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", selectedList));
+    }
+
+    // userId -> List<Long::YachtId>
+    @GetMapping("/get-yacht-list")
+    public ResponseEntity getYachtIdListByUser(@RequestParam("userId") Long userId) {
+        List<Yacht> yachtList = yachtUserRepository.findAllYachtByUserId(userId);
+        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", yachtList.stream().map(Yacht::getId).toList()));
     }
 
 }

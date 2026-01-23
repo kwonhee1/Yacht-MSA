@@ -1,4 +1,4 @@
-package HooYah.Yacht.common.excetion;
+package HooYah.Yacht.excetion;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,13 +12,13 @@ public class CustomExceptionHandler {
     @ExceptionHandler(CustomException.class)
     public ResponseEntity handleCustomException(CustomException e) {
         e.printStackTrace();
-        return ResponseEntity.status(e.errorCode.status).body(e.errorCode.message);
+        return ResponseEntity.status(e.statusCode).body(e.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         e.printStackTrace();
-        return ResponseEntity.status(ErrorCode.INVALID_REQUEST_PARAMETER.status).body(ErrorCode.INVALID_REQUEST_PARAMETER.message);
+        return ResponseEntity.status(ErrorCode.INVALID_REQUEST_PARAMETER.statusCode).body(ErrorCode.INVALID_REQUEST_PARAMETER.message);
     }
 
     @ExceptionHandler(Exception.class)

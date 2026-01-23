@@ -1,8 +1,8 @@
 package HooYah.Yacht.yacht.controller;
 
-import HooYah.Yacht.common.SuccessResponse;
-import HooYah.Yacht.common.excetion.CustomException;
-import HooYah.Yacht.common.excetion.ErrorCode;
+import HooYah.Yacht.SuccessResponse;
+import HooYah.Yacht.excetion.CustomException;
+import HooYah.Yacht.excetion.ErrorCode;
 import HooYah.Yacht.yacht.domain.Yacht;
 import HooYah.Yacht.yacht.dto.request.CreateYachtDto;
 import HooYah.Yacht.yacht.dto.request.UpdateYachtDto;
@@ -12,7 +12,6 @@ import HooYah.Yacht.webclient.WebClient.HttpMethod;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,26 +52,26 @@ public class YachtController {
         if(partList != null && !partList.isEmpty()) {
             String uri = gatewayURL + partCreateURI + "?yachtId=" + createdYacht.getId();
             try {
-                webClient.webClient(uri, HttpMethod.POST, partList); // Part domain throws CustomException (JACKSON_EXCEPTION,406) --> CustomException(ErrorCode.API_FAIL)
+                webClient.webClient(uri, HttpMethod.POST, partList).toMap(); // Part domain throws CustomException (JACKSON_EXCEPTION,406) --> CustomException(ErrorCode.API_FAIL)
             } catch (CustomException e) {
                 // fail create Part :: just log
                 logger.error("YachtDomain.YachtController.createYacht :: fail create part" + createdYacht.getId());
             }
         }
 
-        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", null));
+        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", null));
     }
 
     @PutMapping
     public ResponseEntity updateYacht(@RequestBody @Valid UpdateYachtDto dto, HttpServletRequest request) {
         yachtService.updateYacht(getUserId(request), dto);
-        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", null));
+        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", null));
     }
 
     @DeleteMapping("/{yachtId}")
     public ResponseEntity deleteYacht(HttpServletRequest request, @PathVariable("yachtId") Long yachtId) {
         yachtService.deleteYacht(getUserId(request), yachtId);
-        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", null));
+        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", null));
     }
 
     private Long getUserId(HttpServletRequest request) {

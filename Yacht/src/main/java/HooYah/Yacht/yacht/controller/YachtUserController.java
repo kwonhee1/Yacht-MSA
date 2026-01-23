@@ -1,9 +1,9 @@
 package HooYah.Yacht.yacht.controller;
 
 import HooYah.Redis.CacheService;
-import HooYah.Yacht.common.SuccessResponse;
-import HooYah.Yacht.common.excetion.CustomException;
-import HooYah.Yacht.common.excetion.ErrorCode;
+import HooYah.Yacht.SuccessResponse;
+import HooYah.Yacht.excetion.CustomException;
+import HooYah.Yacht.excetion.ErrorCode;
 import HooYah.Yacht.yacht.dto.request.InviteYachtDto;
 import HooYah.Yacht.yacht.dto.response.ResponseYachtDto;
 import HooYah.Yacht.yacht.service.YachtUserService;
@@ -43,7 +43,7 @@ public class YachtUserController {
     @GetMapping
     public ResponseEntity getYachtList(HttpServletRequest request) {
         List<ResponseYachtDto> yachtList = yachtUserService.yachtList(getUserId(request));
-        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", Map.of("list", yachtList)));
+        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", Map.of("list", yachtList)));
     }
 
     @GetMapping("/user/{yachtId}")
@@ -55,22 +55,22 @@ public class YachtUserController {
 
         List<?> userList = userCacheService.getListOrSelect(
                 yachtUserIdList,
-                () -> (List) webClient.webClient(gatewayURL + userListURI, HttpMethod.POST, yachtUserIdList)
+                () -> (List) webClient.webClient(gatewayURL + userListURI, HttpMethod.POST, yachtUserIdList).toList()
         );
 
-        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", Map.of("userList", userList)));
+        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", Map.of("userList", userList)));
     }
 
     @GetMapping("/invite")
     public ResponseEntity getYachtInviteCode(@RequestParam("yachtId") Long yachtId, HttpServletRequest request) {
         Long code = yachtUserService.getYachtCode(yachtId, getUserId(request));
-        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", Map.of("code", code)));
+        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", Map.of("code", code)));
     }
 
     @PostMapping("/invite")
     public ResponseEntity inviteWithCode(@RequestBody @Valid InviteYachtDto dto, HttpServletRequest request) {
         yachtUserService.inviteYachtByHash(dto.getCode(), getUserId(request));
-        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", null));
+        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", null));
     }
 
     private Long getUserId(HttpServletRequest request) {
