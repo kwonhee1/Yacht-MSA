@@ -1,8 +1,5 @@
 package HooYah.User.user.controller;
 
-import HooYah.User.common.SuccessResponse;
-import HooYah.User.common.excetion.CustomException;
-import HooYah.User.common.excetion.ErrorCode;
 import HooYah.User.user.JWTUtil;
 import HooYah.User.user.domain.User;
 import HooYah.User.user.dto.request.LoginDto;
@@ -10,11 +7,15 @@ import HooYah.User.user.dto.request.RegisterDto;
 import HooYah.User.user.dto.response.UserInfoDto;
 import HooYah.User.user.repository.UserRepository;
 import HooYah.User.user.service.UserService;
+import HooYah.Yacht.SuccessResponse;
+import HooYah.Yacht.excetion.CustomException;
+import HooYah.Yacht.excetion.ErrorCode;
+import HooYah.Yacht.util.ListUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +38,7 @@ public class UserController {
     @PostMapping("/public/register")
     public ResponseEntity register(@RequestBody @Valid RegisterDto dto) {
         userService.registerWithEmail(dto);
-        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", null));
+        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", null));
     }
 
     @PostMapping("/public/login")
@@ -45,7 +46,7 @@ public class UserController {
         User user = userService.login(dto);
         String token = JWTUtil.generateToken(user.getId());
 
-        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", Map.of("token", token)));
+        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", Map.of("token", token)));
     }
 
     @GetMapping("/public/email-check")
@@ -53,41 +54,39 @@ public class UserController {
         boolean isExist = userService.findByEmail(email).isPresent();
 
         if(isExist)
-            return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "exist", null));
+            return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "exist", null));
         else
-            return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "not exist", null));
+            return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "not exist", null));
     }
 
     @GetMapping("/api")
     public ResponseEntity getUser(HttpServletRequest request) {
         User user = userService.findById(getUserId(request));
-        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", UserInfoDto.of(user)));
+        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", UserInfoDto.of(user)));
     }
 
     @DeleteMapping("/api")
     public ResponseEntity deleteUser(HttpServletRequest request) {
         userService.deleteUser(getUserId(request));
-        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", null));
+        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", null));
     }
 
-    /*
-      * throw
-      *      CONFLICT : input (UserIdList.size) != output (UserInfoList.size) :: 잘못된 userId값이 포함되었을 경우 (중복 값인 경우도 포함됨)
-     */
+    // proxy
     @PostMapping("/proxy/user-list")
     public ResponseEntity getUserList(@RequestBody List<Long> userIdList) {
-        List<User> userList = userService.getUserList(userIdList);
-        List<UserInfoDto> userInfoList = userList.stream().map(UserInfoDto::of).toList();
-        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", userInfoList));
+        List<User> selectedUserList = userService.getUserList(userIdList);
+        List<User> sortedUserList = ListUtil.sortByRequestOrder(userIdList, selectedUserList, (user)->user.getId());
+
+        List<UserInfoDto> userInfoList = sortedUserList.stream().map(UserInfoDto::of).toList();
+        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", userInfoList));
     }
 
     @PostMapping("/proxy/user-token")
     public ResponseEntity getUserToken(@RequestBody List<Long> userIdList) {
-        List<String> tokenList = userRepository.findAllById(userIdList)
-                .stream()
-                .map(User::getToken)
-                .toList();
-        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK, "success", tokenList));
+        List<User> selectedUserList = userRepository.findAllById(userIdList);
+        List<User> sortedUserList = ListUtil.sortByRequestOrder(userIdList, selectedUserList, (user)->user.getId());
+
+        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", sortedUserList));
     }
 
     private Long getUserId(HttpServletRequest request) {

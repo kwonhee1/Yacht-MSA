@@ -1,8 +1,8 @@
 package HooYah.User.user.domain;
 
-import HooYah.User.common.excetion.CustomException;
-import HooYah.User.common.excetion.ErrorCode;
 import HooYah.User.passwordencoder.PasswordEncoder;
+import HooYah.Yacht.excetion.CustomException;
+import HooYah.Yacht.excetion.ErrorCode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

@@ -1,12 +1,12 @@
 package HooYah.User.user.service;
 
-import HooYah.User.common.excetion.CustomException;
-import HooYah.User.common.excetion.ErrorCode;
 import HooYah.User.passwordencoder.PasswordEncoder;
 import HooYah.User.user.domain.User;
 import HooYah.User.user.dto.request.LoginDto;
 import HooYah.User.user.dto.request.RegisterDto;
 import HooYah.User.user.repository.UserRepository;
+import HooYah.Yacht.excetion.CustomException;
+import HooYah.Yacht.excetion.ErrorCode;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -55,12 +55,7 @@ public class UserService {
     }
 
     public List<User> getUserList(List<Long> userIdList) {
-        List<User> response = userRepository.findAllById(userIdList);
-
-        if(response.size() != userIdList.size())
-            throw new CustomException(ErrorCode.CONFLICT);
-
-        return response;
+        return userRepository.findAllById(userIdList);
     }
 
 }
