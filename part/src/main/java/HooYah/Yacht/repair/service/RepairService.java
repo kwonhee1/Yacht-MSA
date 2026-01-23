@@ -127,7 +127,7 @@ public class RepairService {
 
         Object yachtUser = yachtCacheService.getOrSelect(
                 yachtId, userId,
-                ()-> webClient.webClient(uri, HttpMethod.GET, null)
+                ()-> webClient.webClient(uri, HttpMethod.GET, null).toMap()
         );
 
         if(yachtUser == null)
@@ -150,7 +150,7 @@ public class RepairService {
                 gatewayURL + calendarAlarmAutoGenerateURI,
                 HttpMethod.POST,
                 body
-        );
+        ).toMap();
     }
 
 }

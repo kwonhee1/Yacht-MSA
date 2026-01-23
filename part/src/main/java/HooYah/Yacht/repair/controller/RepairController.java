@@ -8,6 +8,7 @@ import HooYah.Yacht.SuccessResponse;
 import HooYah.Yacht.repair.service.RepairService;
 import HooYah.Yacht.webclient.WebClient;
 import HooYah.Yacht.webclient.WebClient.HttpMethod;
+import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +52,7 @@ public class RepairController {
         List<Long> repairUserIdList = repairList.stream().map(Repair::getUserId).toList();
         List<?> repairUserInfoList = userCacheService.getListOrSelect(
                 repairUserIdList,
-                ()-> (List) webClient.webClient(gatewayURL + userListURI, HttpMethod.POST, repairUserIdList) // 순서 보장함
+                ()-> (List) webClient.webClient(gatewayURL + userListURI, HttpMethod.POST, repairUserIdList).toList() // 순서 보장함
         );
 
         List<RepairDto> response = new ArrayList<>();
