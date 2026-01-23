@@ -2,9 +2,6 @@ package HooYah.Yacht.webclient;
 
 import HooYah.Yacht.excetion.CustomException;
 import HooYah.Yacht.excetion.ErrorCode;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -12,7 +9,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.util.Map;
 
 public class WebClient {
 
@@ -30,7 +26,8 @@ public class WebClient {
                 .build();
     }
 
-    public Object webClient(String uri, HttpMethod method, Object body) {
+    public WebResponse webClient(String uri, HttpMethod method, Object body) {
+        // build http request
         HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                 .uri(URI.create(uri))
                 .header("Content-Type", "application/json");
@@ -41,10 +38,12 @@ public class WebClient {
             requestBuilder.method(method.name(), BodyPublishers.noBody());
 
         HttpRequest request = requestBuilder.build();
-        return send(request);
+
+        // send request
+        return new WebResponse(send(request));
     }
 
-    private Object send (HttpRequest request) {
+    private String send (HttpRequest request) {
         HttpClient httpClient = createClient();
         HttpResponse<String> httpResponse;
 
@@ -58,40 +57,7 @@ public class WebClient {
         if(httpResponse.statusCode() != 200)
             throw new CustomException(ErrorCode.API_FAIL, httpResponse.body());
 
-
-        Map response = Mapper.toMap(httpResponse.body());
-        return response.get("response");
-    }
-
-    class Mapper {
-        private static ObjectMapper objectMapper;
-
-        private static void setObjectMapper(TimeZone timeZone) {
-            objectMapper = new ObjectMapper();
-            objectMapper.registerModule(new JavaTimeModule());
-            objectMapper.setTimeZone(timeZone.getTimeZone());
-        }
-
-        public static String toString(Object value) {
-            try {
-                return objectMapper.writeValueAsString(value);
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        public static <T> T toObject(String value, Class<T> clazz) {
-            try {
-                return objectMapper.readValue(value, clazz);
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        public static Map toMap(String value) {
-            return toObject(value, Map.class);
-        }
-
+        return httpResponse.body();
     }
 
     public enum HttpMethod {
