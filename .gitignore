@@ -1,3 +1,5 @@
+test/**
+
 **.jar
 .env
 Gateway/**/**.properties
