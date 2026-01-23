@@ -5,7 +5,7 @@ import HooYah.Redis.CacheService;
 import HooYah.Redis.CacheService.Select;
 import HooYah.Redis.CacheServiceImpl;
 import HooYah.Redis.pool.Pool;
-import java.util.Optional;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,7 @@ public class MainTest {
     @BeforeEach
     public void init() {
         pool = Cache.generateInMemoryPool();
-        testCacheService = new CacheServiceImpl("test", pool);
+        testCacheService = new CacheServiceImpl("test", pool, Map.class);
 
         selectOne = Mockito.spy(new Select<Object>() {
             @Override

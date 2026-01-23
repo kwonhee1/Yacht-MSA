@@ -5,42 +5,55 @@ import HooYah.Redis.pool.JedisPool;
 import HooYah.Redis.pool.Pool;
 import HooYah.Redis.template.TemplateImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CacheServiceImpl implements CacheService {
+public class CacheServiceImpl<T> implements CacheService<T> {
 
     private final String category;
     private final TemplateImpl templateImpl;
+    private final Class<T> type;
 
     /*
         ObjectMapper must init in Redis library
         외부에서 주입을 받게 되면 -> 입력될 때 사용되는 ObjectMapper와 출력될때 사용되는 ObjectMapper 버전 차이로 인해 작동하지 않을 수있음!
      */
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
 
     private SaveSecond saveSecond = new SaveSecond(3600L); // default value 1 hour
 
     public CacheServiceImpl(
             String category,
-            Pool pool
+            Pool pool,
+            Class<T> type
     ) {
         this.templateImpl = new TemplateImpl(pool);
         this.category = category;
+        this.type = type;
+        this.objectMapper = initObjectMapper();
     }
 
     public CacheServiceImpl(
             String category,
             JedisPool jedisPool,
-            Long second
+            Long second,
+            Class<T> type
     ) {
-        this(category, jedisPool);
+        this(category, jedisPool, type);
         this.saveSecond = new SaveSecond(second);
     }
 
+    private ObjectMapper initObjectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.enable(DeserializationFeature.USE_LONG_FOR_INTS);
+        return objectMapper;
+    }
+
     @Override
-    public void add(Long id, Object value) {
+    public void add(Long id, T value) {
         String key = toKey(category, id);
         CacheValue cacheValue = CacheValue.ofSource(objectToString(value));
 
@@ -48,16 +61,16 @@ public class CacheServiceImpl implements CacheService {
     }
 
     @Override
-    public Object getOrSelect(Long selectId, Select<Object> select) {
+    public T getOrSelect(Long selectId, CacheService.Select<T> select) {
         return getOrSelect(toKey(category, selectId), select);
     }
 
     @Override
-    public Object getOrSelect(Long subjectId, Long selectId, Select<Object> select) {
+    public T getOrSelect(Long subjectId, Long selectId, CacheService.Select<T> select) {
         return getOrSelect(toKey(category, subjectId, selectId), select);
     }
 
-    private Object getOrSelect(String key, Select<Object> select) {
+    private T getOrSelect(String key, CacheService.Select<T> select) {
         String cacheString = templateImpl.get(key, saveSecond);
         CacheValue cacheValue = CacheValue.ofSaved(cacheString);
 
@@ -65,7 +78,7 @@ public class CacheServiceImpl implements CacheService {
             return stringToObject(cacheValue.getString());
 
         // not value in redis, need select
-        Object selectedData = select.select();
+        T selectedData = select.select();
 
         CacheValue newValue = CacheValue.ofSource(objectToString(selectedData));
         templateImpl.add(key, newValue.getString(), saveSecond);
@@ -74,7 +87,7 @@ public class CacheServiceImpl implements CacheService {
     }
 
     @Override
-    public List getListOrSelect(Long subjectId, List<Long> selectIdList, Select<List> select) {
+    public List<T> getListOrSelect(Long subjectId, List<Long> selectIdList, CacheService.Select<List<T>> select) {
         List<String> keyList = selectIdList
                         .stream()
                         .map((id)->toKey(category, subjectId, id))
@@ -83,7 +96,7 @@ public class CacheServiceImpl implements CacheService {
     }
 
     @Override
-    public List getListOrSelect(List<Long> selectIdList, Select<List> select) {
+    public List<T> getListOrSelect(List<Long> selectIdList, CacheService.Select<List<T>> select) {
         List<String> keyList = selectIdList
                 .stream()
                 .map((id)-> toKey(category, id))
@@ -92,7 +105,7 @@ public class CacheServiceImpl implements CacheService {
     }
 
     // todo : method name
-    private List getListOrSelectPrivate(List<String> keyList, Select<List> select) {
+    private List<T> getListOrSelectPrivate(List<String> keyList, CacheService.Select<List<T>> select) {
         List<CacheValue> cacheValueList =
                 templateImpl.getList(keyList, saveSecond)
                     .stream()
@@ -114,10 +127,10 @@ public class CacheServiceImpl implements CacheService {
         }
 
         // if contains unKnown -> must select all
-        List selectedData = select.select();
+        List<T> selectedData = select.select();
 
         List<String> writeDataList =
-                ((List<Object>)selectedData)
+                selectedData
                         .stream()
                         .map(data -> CacheValue.ofSource(objectToString(data))) // List<Object> -> List<CacheValue>
                         .map(cacheValue -> cacheValue.getString()) // List<CacheValue> -> List<String>
@@ -148,11 +161,11 @@ public class CacheServiceImpl implements CacheService {
         }
     }
 
-    private Map stringToObject(String value) {
+    private T stringToObject(String value) {
         if(value == null ||  value.isEmpty())
             return null;
         try {
-            return objectMapper.readValue(value, Map.class);
+            return objectMapper.readValue(value, type);
         } catch (JsonProcessingException e) {
             throw new RedisException(e.getMessage());
         }

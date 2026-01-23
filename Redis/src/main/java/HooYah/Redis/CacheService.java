@@ -3,17 +3,17 @@ package HooYah.Redis;
 import java.util.List;
 import java.util.Optional;
 
-public interface CacheService {
+public interface CacheService<T> {
 
-    void add(Long id, Object value);
+    void add(Long id, T value);
 
-    Object getOrSelect(Long selectId, Select<Object> select);
+    T getOrSelect(Long selectId, Select<T> select);
 
-    Object getOrSelect(Long subjectId, Long selectId, Select<Object> select);
+    T getOrSelect(Long subjectId, Long selectId, Select<T> select);
 
-    List getListOrSelect(List<Long> selectIdList, Select<List> select);
+    List<T> getListOrSelect(List<Long> selectIdList, Select<List<T>> select);
 
-    List getListOrSelect(Long subjectId, List<Long> selectIdList, Select<List> select);
+    List<T> getListOrSelect(Long subjectId, List<Long> selectIdList, Select<List<T>> select);
 
     @FunctionalInterface
     interface Select <S> {
