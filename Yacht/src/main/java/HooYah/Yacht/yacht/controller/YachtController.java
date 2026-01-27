@@ -51,12 +51,7 @@ public class YachtController {
         List<Object> partList = dto.getPartList();
         if(partList != null && !partList.isEmpty()) {
             String uri = gatewayURL + partCreateURI + "?yachtId=" + createdYacht.getId();
-            try {
-                webClient.webClient(uri, HttpMethod.POST, partList).toMap(); // Part domain throws CustomException (JACKSON_EXCEPTION,406) --> CustomException(ErrorCode.API_FAIL)
-            } catch (CustomException e) {
-                // fail create Part :: just log
-                logger.error("YachtDomain.YachtController.createYacht :: fail create part" + createdYacht.getId());
-            }
+            webClient.webClientAsync(uri, HttpMethod.POST, partList); // 비동기 처리
         }
 
         return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", null));
