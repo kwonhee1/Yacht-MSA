@@ -8,6 +8,9 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandler;
+import java.net.http.HttpResponse.BodySubscriber;
+import java.net.http.HttpResponse.ResponseInfo;
 import java.time.Duration;
 
 public class WebClient {
@@ -27,7 +30,16 @@ public class WebClient {
     }
 
     public WebResponse webClient(String uri, HttpMethod method, Object body) {
-        // build http request
+        HttpRequest request = buildHttpRequest(uri, method, body);
+        return new WebResponse(send(request));
+    }
+
+    public void webClientAsync(String uri, HttpMethod method, Object body) {
+        HttpRequest request = buildHttpRequest(uri, method, body);
+        createClient().sendAsync(request, (info)->null);
+    }
+
+    private HttpRequest buildHttpRequest(String uri, HttpMethod method, Object body) {
         HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                 .uri(URI.create(uri))
                 .header("Content-Type", "application/json");
@@ -37,10 +49,7 @@ public class WebClient {
         else
             requestBuilder.method(method.name(), BodyPublishers.noBody());
 
-        HttpRequest request = requestBuilder.build();
-
-        // send request
-        return new WebResponse(send(request));
+        return requestBuilder.build();
     }
 
     private String send (HttpRequest request) {
