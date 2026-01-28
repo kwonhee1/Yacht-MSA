@@ -54,6 +54,10 @@ dependencies {
     // Redis
     implementation files('libs/Redis.jar')
     implementation files('libs/Common.jar') // need json mapper
+
+    // redis Message que
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
 }
 
 tasks.named('test') {
