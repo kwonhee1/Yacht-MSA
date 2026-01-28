@@ -1,4 +1,4 @@
-package HooYah.Yacht.webclient;
+package HooYah.Yacht.webclient.config;
 
 public enum TimeZone {
 

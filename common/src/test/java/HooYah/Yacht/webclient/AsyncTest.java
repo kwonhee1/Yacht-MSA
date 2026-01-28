@@ -1,6 +1,7 @@
 package HooYah.Yacht.webclient;
 
 import HooYah.Yacht.webclient.WebClient.HttpMethod;
+import HooYah.Yacht.webclient.config.TimeZone;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 

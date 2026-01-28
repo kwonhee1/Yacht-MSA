@@ -7,4 +7,7 @@ module Yacht.main {
     exports HooYah.Yacht;
     exports HooYah.Yacht.webclient;
     exports HooYah.Yacht.excetion;
+    exports HooYah.Yacht.webclient.response;
+    exports HooYah.Yacht.webclient.send;
+    exports HooYah.Yacht.webclient.config;
 }

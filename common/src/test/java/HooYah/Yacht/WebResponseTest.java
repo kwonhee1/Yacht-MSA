@@ -1,8 +1,8 @@
 package HooYah.Yacht;
 
-import HooYah.Yacht.webclient.TimeZone;
+import HooYah.Yacht.webclient.config.TimeZone;
 import HooYah.Yacht.webclient.WebClient;
-import HooYah.Yacht.webclient.WebResponse;
+import HooYah.Yacht.webclient.response.WebResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;

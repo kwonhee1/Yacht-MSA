@@ -1,6 +1,7 @@
-package HooYah.Yacht.webclient;
+package HooYah.Yacht.webclient.response;
 
 import HooYah.Yacht.SuccessResponse;
+import HooYah.Yacht.webclient.Mapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.List;
 import java.util.Map;

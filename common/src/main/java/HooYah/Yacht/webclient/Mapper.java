@@ -1,10 +1,10 @@
 package HooYah.Yacht.webclient;
 
+import HooYah.Yacht.webclient.config.TimeZone;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import java.util.Map;
 
 public class Mapper {
     private static ObjectMapper objectMapper;
