@@ -1,70 +1,48 @@
 package HooYah.Yacht.conf;
 
-import HooYah.Yacht.messageque.Domain;
-import HooYah.Yacht.messageque.Topic;
-import HooYah.Yacht.messageque.subscriber.SubscriberContainerConfig.OnMessage;
-import HooYah.Yacht.messageque.subscriber.SubscriberContainerConfig;
+import HooYah.Yacht.Domain;
+import HooYah.Yacht.RedisMessageQueSetting;
+import HooYah.Yacht.Topic;
+import HooYah.Yacht.dto.CalendarSuccessEvent;
+import HooYah.Yacht.dto.DeletedEvent;
+import HooYah.Yacht.dto.LastRepairChangedEvent;
 import HooYah.Yacht.part.service.PartService;
+import HooYah.Yacht.publisher.MessagePublisher;
 import HooYah.Yacht.repair.service.RepairService;
+import HooYah.Yacht.subscriber.Behaviour;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
-import org.springframework.data.redis.serializer.StringRedisSerializer;
-import org.springframework.data.redis.stream.StreamMessageListenerContainer;
 
 @Configuration
 public class RedisQueConfig {
 
-    private final RedisTemplate<String, Object> redisTemplate;
-    private final PartService partService;
-    private final RepairService repairService;
+    private RedisMessageQueSetting setting;
 
     public RedisQueConfig(
-            RedisConnectionFactory factory,
+            ObjectMapper objectMapper,
             PartService partService,
             RepairService repairService
     ) {
-        this.redisTemplate = createRedisTemplate(factory);
-        this.partService = partService;
-        this.repairService = repairService;
-        initRedisGroups();
-    }
+        setting = new RedisMessageQueSetting(objectMapper, Domain.PART);
 
-    private void initRedisGroups() {
-        createAllGroup(Topic.PART_DELETE);
-        createAllGroup(Topic.PART_CHANGE_INTERVAL);
-    }
+        Map subscribeBehaviourMap = Behaviour.builder()
+                .add(Topic.YACHT_DELETE, (DeletedEvent event)->partService.deletePartByYachtId(event.getId()))
+                .add(Topic.CALENDAR_SUCCESS, (CalendarSuccessEvent event)->repairService.addRepair(event.getPartId(), event.getReview(), event.getStartTime(), event.getUserId()))
+                .build();
 
-    @Bean
-    public RedisTemplate<String, Object> redisTemplate(){
-        return redisTemplate;
+        setting.startSubscribe(subscribeBehaviourMap);
     }
 
     @Bean
-    public StreamMessageListenerContainer streamMessageListenerContainer(RedisConnectionFactory connectionFactory) {
-        Map<Topic, OnMessage> topicMap = Map.of(
-                Topic.YACHT_DELETE, (yachtId)-> partService.deletePartByYachtId(yachtId) ,
-                Topic.CALENDAR_SUCCESS, (partId)-> repairService.addRepair()
-        );
-        return new SubscriberContainerConfig(connectionFactory, , Domain.PART).streamListenerContainer();
+    public MessagePublisher<DeletedEvent> partDeletePublisher() {
+        return setting.generatePublisher(Topic.PART_DELETE);
     }
 
-    private RedisTemplate<String, Object> createRedisTemplate(RedisConnectionFactory factory) {
-        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
-        redisTemplate.setConnectionFactory(factory);
-        redisTemplate.setKeySerializer(new StringRedisSerializer());
-        redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());
-        return redisTemplate;
-    }
-
-    private void createAllGroup(Topic topic) {
-        for(Domain domain : Domain.values())
-            redisTemplate.opsForStream()
-                    .createGroup(topic.topic(), Topic.PART_DELETE.group(domain));
+    @Bean
+    public MessagePublisher<LastRepairChangedEvent> repairChangedPublisher() {
+        return setting.generatePublisher(Topic.PART_INTERVAL_CHANGED);
     }
 
 }

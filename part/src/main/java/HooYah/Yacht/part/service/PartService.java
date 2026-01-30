@@ -130,6 +130,13 @@ public class PartService {
         partRepository.delete(part);
     }
 
+    @Transactional
+    // proxy에 의해 실행됨 -> validate 필요 없음!
+    // todo : 구현
+    public void deletePartByYachtId(Long yachtId) {
+
+    }
+
     private void validateYachtUser(Long yachtId, Long userId) {
         String uri = String.format(gatewayURL + yachtUserURI, yachtId, userId);
 

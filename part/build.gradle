@@ -53,7 +53,8 @@ dependencies {
 
     // Redis
     implementation files('libs/Redis.jar')
-    implementation files('libs/Common.jar') // need json mapper
+    implementation files('libs/Common.jar')
+    implementation files('libs/Message.jar')
 
     // redis Message que
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
