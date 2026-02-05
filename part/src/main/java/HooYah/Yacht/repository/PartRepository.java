@@ -1,10 +1,11 @@
-package HooYah.Yacht.part.repository;
+package HooYah.Yacht.repository;
 
-import HooYah.Yacht.part.domain.Part;
-import java.util.List;
+import HooYah.Yacht.domain.Part;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import java.util.List;
 
 public interface PartRepository extends JpaRepository<Part, Long> {
 

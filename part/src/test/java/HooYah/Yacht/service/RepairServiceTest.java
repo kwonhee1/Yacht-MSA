@@ -4,11 +4,10 @@ import static HooYah.Yacht.TestUtil.*;
 
 import HooYah.Redis.Cache;
 import HooYah.Redis.CacheService;
-import HooYah.Yacht.part.domain.Part;
-import HooYah.Yacht.part.repository.PartRepository;
-import HooYah.Yacht.repair.domain.Repair;
-import HooYah.Yacht.repair.repository.RepairRepository;
-import HooYah.Yacht.repair.service.RepairService;
+import HooYah.Yacht.domain.Part;
+import HooYah.Yacht.domain.Repair;
+import HooYah.Yacht.repository.PartRepository;
+import HooYah.Yacht.repository.RepairRepository;
 import HooYah.Yacht.webclient.WebClient;
 import HooYah.Yacht.webclient.WebClient.HttpMethod;
 import java.time.OffsetDateTime;
@@ -18,10 +17,8 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Disabled
 public class RepairServiceTest {
@@ -42,7 +39,11 @@ public class RepairServiceTest {
         inMemoryCache = Cache.cacheService("category", Cache.generateInMemoryPool()); // not mocked
         mockWebClient = Mockito.spy(WebClient.class);
 
-        repairService = new RepairService(mockRepairRepository, mockPartRepository, inMemoryCache, mockWebClient);
+        TransactionTemplate transactionTemplate = Mockito.mock(TransactionTemplate.class);
+        Mockito.lenient().when(transactionTemplate.execute(Mockito.any()))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        repairService = new RepairService(mockRepairRepository, mockPartRepository, Mockito.mock(UpdateCalendarAndAlarmService.class), inMemoryCache, mockWebClient, transactionTemplate);
     }
 
     // test :

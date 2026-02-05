@@ -1,18 +1,14 @@
-package HooYah.Yacht.repair.controller;
+package HooYah.Yacht.controller;
 
 import HooYah.Redis.CacheService;
-import HooYah.Yacht.repair.domain.Repair;
-import HooYah.Yacht.repair.dto.RequestRepairDto;
-import HooYah.Yacht.repair.dto.RepairDto;
 import HooYah.Yacht.SuccessResponse;
-import HooYah.Yacht.repair.service.RepairService;
+import HooYah.Yacht.domain.Repair;
+import HooYah.Yacht.dto.repair.RepairDto;
+import HooYah.Yacht.dto.repair.RequestRepairDto;
+import HooYah.Yacht.service.RepairService;
 import HooYah.Yacht.webclient.WebClient;
 import HooYah.Yacht.webclient.WebClient.HttpMethod;
-import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.validation.Valid;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -26,6 +22,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequiredArgsConstructor

@@ -1,12 +1,13 @@
-package HooYah.Yacht.part.dto.response;
+package HooYah.Yacht.dto.part;
 
-import HooYah.Yacht.part.domain.Part;
-import HooYah.Yacht.repair.domain.Repair;
-import java.time.OffsetDateTime;
+import HooYah.Yacht.domain.Part;
+import HooYah.Yacht.domain.Repair;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.time.OffsetDateTime;
 
 @NoArgsConstructor
 @Getter

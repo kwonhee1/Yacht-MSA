@@ -46,6 +46,5 @@ web-client:
   gateway: ${GATEWAY_URL}
 
   user-list: /user/proxy/user-list
-  yacht: /yacht/proxy/validate-yacht?yachtId=%d
   yacht-user: /yacht/proxy/validate-user?yachtId=%d&userId=%d
   calendar-alarm-auto-generate: /calendar/proxy

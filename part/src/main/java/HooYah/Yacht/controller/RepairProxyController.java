@@ -1,9 +1,8 @@
-package HooYah.Yacht.repair.controller;
+package HooYah.Yacht.controller;
 
 import HooYah.Yacht.SuccessResponse;
-import HooYah.Yacht.repair.dto.RequestRepairDto;
-import HooYah.Yacht.repair.service.RepairService;
-import jakarta.servlet.http.HttpServletRequest;
+import HooYah.Yacht.dto.repair.RequestRepairDto;
+import HooYah.Yacht.service.RepairService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

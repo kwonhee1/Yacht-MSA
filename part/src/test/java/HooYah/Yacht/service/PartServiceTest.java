@@ -4,13 +4,12 @@ import static HooYah.Yacht.TestUtil.*;
 
 import HooYah.Redis.Cache;
 import HooYah.Redis.CacheService;
-import HooYah.Yacht.part.domain.Part;
-import HooYah.Yacht.part.dto.request.UpdatePartDto;
-import HooYah.Yacht.part.dto.response.PartDto;
-import HooYah.Yacht.part.repository.PartRepository;
-import HooYah.Yacht.part.service.PartService;
-import HooYah.Yacht.repair.domain.Repair;
-import HooYah.Yacht.repair.repository.RepairRepository;
+import HooYah.Yacht.domain.Part;
+import HooYah.Yacht.domain.Repair;
+import HooYah.Yacht.dto.part.PartDto;
+import HooYah.Yacht.dto.part.UpdatePartDto;
+import HooYah.Yacht.repository.PartRepository;
+import HooYah.Yacht.repository.RepairRepository;
 import HooYah.Yacht.webclient.WebClient;
 import HooYah.Yacht.webclient.WebClient.HttpMethod;
 import java.util.List;
@@ -25,6 +24,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
+import org.springframework.transaction.support.TransactionTemplate;
 
 // @SpringBootTest
 @Disabled
@@ -38,6 +38,8 @@ public class PartServiceTest {
     private CacheService inMemoryCache;
     private WebClient mockWebClient;
 
+    private RepairService mockedRepairService;
+
     @BeforeEach
     public void init() {
         mockPartRepository = Mockito.mock(PartRepository.class);
@@ -46,7 +48,14 @@ public class PartServiceTest {
         inMemoryCache = Cache.cacheService("category", Cache.generateInMemoryPool()); // not mocked
         mockWebClient = Mockito.mock(WebClient.class);
 
-        partService = new PartService(mockPartRepository, mockRepairRepository, inMemoryCache, mockWebClient);
+        mockedRepairService = Mockito.mock(RepairService.class);
+
+        TransactionTemplate transactionTemplate = Mockito.mock(TransactionTemplate.class);
+        Mockito.lenient().when(transactionTemplate.execute(Mockito.any()))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+
+        partService = new PartService(mockPartRepository, mockRepairRepository, Mockito.mock(UpdateCalendarAndAlarmService.class), mockedRepairService, transactionTemplate, inMemoryCache, mockWebClient);
     }
 
     @Test

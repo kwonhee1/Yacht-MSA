@@ -1,11 +1,12 @@
-package HooYah.Yacht.repair.repository;
+package HooYah.Yacht.repository;
 
-import HooYah.Yacht.repair.domain.Repair;
-import java.util.List;
-import java.util.Optional;
+import HooYah.Yacht.domain.Repair;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import java.util.List;
+import java.util.Optional;
 
 public interface RepairRepository extends JpaRepository<Repair, Long> {
     @Query("select r from Repair r where r.part.id = :partId")

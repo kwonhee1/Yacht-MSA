@@ -1,6 +1,5 @@
-package HooYah.Yacht.part.domain;
+package HooYah.Yacht.domain;
 
-import HooYah.Yacht.repair.domain.Repair;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -9,13 +8,14 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import java.time.OffsetDateTime;
-import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.time.OffsetDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "part")
@@ -49,8 +49,13 @@ public class Part {
         this.model = model;
     }
 
-    public void updateInterval(Long interval) {
-        this.interval = interval;
+    public boolean updateInterval(Long interval) {
+        if(interval == null || interval == this.interval)
+            return false;
+        else {
+            this.interval = interval;
+            return true;
+        }
     }
 
     public OffsetDateTime nextRepairDate(OffsetDateTime oldRepairDate) {

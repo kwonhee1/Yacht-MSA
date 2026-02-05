@@ -1,16 +1,11 @@
-package HooYah.Yacht.part.controller;
+package HooYah.Yacht.controller;
 
 import HooYah.Yacht.SuccessResponse;
-import HooYah.Yacht.part.domain.Part;
-import HooYah.Yacht.part.dto.request.AddPartDto;
-import HooYah.Yacht.part.dto.response.PartDto;
-import HooYah.Yacht.part.dto.request.UpdatePartDto;
-import HooYah.Yacht.part.service.CreatePartService;
-import HooYah.Yacht.part.service.PartService;
-import HooYah.Yacht.repair.service.RepairService;
+import HooYah.Yacht.dto.part.AddPartDto;
+import HooYah.Yacht.dto.part.UpdatePartDto;
+import HooYah.Yacht.dto.part.PartDto;
+import HooYah.Yacht.service.PartService;
 import jakarta.validation.Valid;
-import java.util.List;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,13 +19,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.util.List;
+import java.util.Map;
+
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/part/api")
 public class PartController {
 
     private final PartService partService;
-    private final CreatePartService createPartService;
 
     @GetMapping("/{yachtId}")
     public ResponseEntity getPartListByYacht(
@@ -46,7 +43,7 @@ public class PartController {
             @RequestBody @Valid AddPartDto dto,
             @RequestHeader("userId") Long userId
     ) {
-        createPartService.addPart(dto, userId);
+        partService.addPart(dto, userId);
         return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", null));
     }
 

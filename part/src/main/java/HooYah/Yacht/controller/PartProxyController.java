@@ -1,21 +1,17 @@
-package HooYah.Yacht.part.controller;
+package HooYah.Yacht.controller;
 
-import HooYah.Yacht.part.service.CreatePartService;
-import HooYah.Yacht.util.ListUtil;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import HooYah.Yacht.SuccessResponse;
+import HooYah.Yacht.domain.Part;
+import HooYah.Yacht.domain.Repair;
+import HooYah.Yacht.dto.part.AddPartDto;
+import HooYah.Yacht.dto.part.PartDto;
 import HooYah.Yacht.excetion.CustomException;
 import HooYah.Yacht.excetion.ErrorCode;
-import HooYah.Yacht.part.domain.Part;
-import HooYah.Yacht.part.dto.request.AddPartDto;
-import HooYah.Yacht.part.dto.response.PartDto;
-import HooYah.Yacht.part.repository.PartRepository;
-import HooYah.Yacht.part.service.PartService;
-import HooYah.Yacht.repair.domain.Repair;
-import HooYah.Yacht.repair.repository.RepairRepository;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import HooYah.Yacht.repository.PartRepository;
+import HooYah.Yacht.repository.RepairRepository;
+import HooYah.Yacht.service.PartService;
+import HooYah.Yacht.util.ListUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +23,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.List;
+
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/part/proxy")
@@ -35,8 +33,6 @@ public class PartProxyController {
     private final PartRepository partRepository;
     private final RepairRepository repairRepository;
     private final PartService partService;
-    private final ObjectMapper objectMapper;
-    private final CreatePartService createPartService;
 
     @GetMapping("/{partId}")
     public ResponseEntity getPartById(@PathVariable("partId") Long partId) {
@@ -44,7 +40,7 @@ public class PartProxyController {
                 .orElseThrow(()->new CustomException(ErrorCode.NOT_FOUND));
 
         Repair lastRepair = repairRepository.findByIdOrderByRepairDateDesc(part.getId())
-                .orElseThrow(()->new CustomException(ErrorCode.NOT_FOUND));
+                .orElseGet(()->null);
 
         return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", PartDto.of(part, lastRepair)));
     }
@@ -80,7 +76,7 @@ public class PartProxyController {
             return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.CONFLICT.value(), "fail", null));
         }
 
-        createPartService.addPartList(yachtId, dtoList);
+        partService.addPartList(yachtId, dtoList);
 
         return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", null));
     }

@@ -1,8 +1,8 @@
 package HooYah.Yacht;
 
-import HooYah.Yacht.part.domain.Part;
-import HooYah.Yacht.part.dto.request.UpdatePartDto;
-import HooYah.Yacht.repair.domain.Repair;
+import HooYah.Yacht.domain.Part;
+import HooYah.Yacht.domain.Repair;
+import HooYah.Yacht.dto.part.UpdatePartDto;
 import java.time.OffsetDateTime;
 
 public class TestUtil {
