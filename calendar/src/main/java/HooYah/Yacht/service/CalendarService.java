@@ -41,11 +41,12 @@ public class CalendarService {
     public CalendarInfo createCalendarByUser(CalendarCreateRequest dto, Long userId) {
         // validate dto.getPartId, YachtUser, userList
         Object yachtInfo = askService.validateYachtUser(dto.getYachtId(), userId);
-        Object partInfo = askService.validatePart(dto.getPartId());
+        Object partInfo = null;
         List referenceUserInfoList = askService.getUserInfoList(dto.getUserList());
 
         // if (type == Part) delete old calendar
         if(dto.getType() == CalendarType.PART) {
+            partInfo = askService.validatePart(dto.getPartId());
             // 동일 part의 켈린더 삭제 (생성 날짜 이전의 자동 생성된 Calendar 모두 삭제)
             List<Calendar> oldCalendarList = calendarRepository.findByPartId(dto.getPartId());
 
@@ -60,7 +61,8 @@ public class CalendarService {
         }
         Calendar newCalendar = createCalendarDomain(dto);
 
-        createNewRepair(newCalendar, userId);
+        if(newCalendar.isCompletedNow())
+            createNewRepair(newCalendar, userId);
 
         return CalendarInfo.of(newCalendar, partInfo, yachtInfo, referenceUserInfoList);
     }
@@ -94,7 +96,8 @@ public class CalendarService {
 
         calendar = updateCalendarDomain(calendar, dto);
 
-        createNewRepair(calendar, userId);
+        if(calendar.isCompletedNow())
+            createNewRepair(calendar, userId);
         return calendar;
     }
 

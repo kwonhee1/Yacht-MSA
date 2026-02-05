@@ -11,7 +11,7 @@ import org.springframework.data.repository.query.Param;
 public interface CalendarRepository extends JpaRepository<Calendar, Long> {
     List<Calendar> findByPartId(Long partId);
 
-    @Query("select c from Calendar c where c.yachtId in :yachtIdList order by c.startDate")
+    @Query("select c from Calendar c left join fetch c.calendarUsers where c.yachtId in :yachtIdList order by c.startDate")
     List<Calendar> findAllByYachtOrderByStartDate(@Param("yachtIdList") List<Long> yachtIdList);
 }
 

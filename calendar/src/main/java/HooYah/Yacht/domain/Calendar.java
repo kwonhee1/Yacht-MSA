@@ -135,6 +135,8 @@ public class Calendar {
     public void updateComplete(boolean isCompleted) {
         if(!isCompleted)
             return;
+        if(this.completed == isCompleted)
+            return;
 
         if(this.review == null)
             throw new CustomException(ErrorCode.CONFLICT);
