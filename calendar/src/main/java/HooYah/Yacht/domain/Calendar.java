@@ -13,6 +13,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +21,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Transient;
+
 
 @Entity
 @Table(name = "calendar")
@@ -67,6 +68,17 @@ public class Calendar {
     @JsonIgnore
     @Transient
     private boolean completedNow = false;
+
+    @Transient
+    public boolean isCompletedNow() {
+        return completedNow;
+    }
+
+    @Transient
+    @Deprecated // used by ignore field when read data from db with jpa
+    public void setCompletedNow(boolean completedNow) {
+        this.completedNow = false;
+    }
 
     public void setCalendarUsers(List<Long> userIdList) {
         List<CalendarUser> calendarUserList = userIdList
@@ -181,11 +193,11 @@ public class Calendar {
             Calendar createdCalendar = new Calendar(
                     id,
                     type, partId, startDate, endDate, yachtId,
-                    false, // completed
+                    false, // isCompleted
                     byUser, // byUser
                     content, review,
                     null, // List<CalendarUser>
-                    false // isCompleted
+                    false // completedNow (updateComplete 함수에서 isCompleted와 같이 초기화 됨) :: 추후 AllArgumentConstructor말고 다른 Constructor 분리시 column 지우기
             );
 
             createdCalendar.updateComplete(isCompleted);
