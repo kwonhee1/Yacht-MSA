@@ -1,7 +1,7 @@
-package HooYah.Gateway.loadbalancer.domain.service;
+package HooYah.Gateway.domain.service;
 
-import HooYah.Gateway.loadbalancer.domain.server.Server;
-import HooYah.Gateway.loadbalancer.domain.vo.Port;
+import HooYah.Gateway.domain.server.Server;
+import HooYah.Gateway.domain.vo.Port;
 
 public class Service {
 
@@ -11,8 +11,6 @@ public class Service {
 
     private final Server server;
     private final Port port;
-
-    private ServiceStatus lastStatus;
 
     private Service(String name, Server server, Port port, boolean isRunning) {
         this.name = name;
@@ -46,10 +44,6 @@ public class Service {
         return server;
     }
 
-    public ServiceStatus getLastStatus() {
-        return lastStatus;
-    }
-
     @Override
     public String toString() {
         return "Service{" +
@@ -57,7 +51,6 @@ public class Service {
                 ", name='" + name + '\'' +
                 ", server=" + server +
                 ", port=" + port +
-                ", lastStatus=" + lastStatus +
                 '}';
     }
 }

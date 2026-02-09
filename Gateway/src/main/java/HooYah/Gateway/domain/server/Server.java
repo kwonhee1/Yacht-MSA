@@ -1,8 +1,8 @@
-package HooYah.Gateway.loadbalancer.domain.server;
+package HooYah.Gateway.domain.server;
 
-import HooYah.Gateway.loadbalancer.domain.service.Service;
-import HooYah.Gateway.loadbalancer.domain.vo.Host;
-import HooYah.Gateway.loadbalancer.domain.vo.Protocol;
+import HooYah.Gateway.domain.service.Service;
+import HooYah.Gateway.domain.vo.Host;
+import HooYah.Gateway.domain.vo.Protocol;
 import java.util.ArrayList;
 import java.util.List;
 

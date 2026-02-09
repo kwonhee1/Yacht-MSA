@@ -1,8 +1,8 @@
-package HooYah.Gateway.loadbalancer.domain.service.property;
+package HooYah.Gateway.domain.service.property;
 
-import HooYah.Gateway.loadbalancer.domain.server.Server;
-import HooYah.Gateway.loadbalancer.domain.service.Service;
-import HooYah.Gateway.loadbalancer.domain.vo.Port;
+import HooYah.Gateway.domain.server.Server;
+import HooYah.Gateway.domain.service.Service;
+import HooYah.Gateway.domain.vo.Port;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import lombok.Getter;

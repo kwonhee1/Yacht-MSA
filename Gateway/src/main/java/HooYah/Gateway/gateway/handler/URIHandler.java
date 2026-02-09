@@ -1,10 +1,8 @@
 package HooYah.Gateway.gateway.handler;
 
 import HooYah.Gateway.gateway.AttributeConfig;
-import HooYah.Gateway.loadbalancer.conf.Config;
-import HooYah.Gateway.loadbalancer.conf.ServerConfig;
-import HooYah.Gateway.loadbalancer.controller.LoadBalancerController;
-import HooYah.Gateway.loadbalancer.domain.vo.Url;
+import HooYah.Gateway.loadbalancer.LoadBalancer;
+import HooYah.Gateway.domain.vo.Url;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -13,21 +11,20 @@ import org.slf4j.LoggerFactory;
 
 public class URIHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
-    private final LoadBalancerController loadBalancerController;
+    private final LoadBalancer loadBalancer;
 
-    public URIHandler(LoadBalancerController loadBalancerController) {
+    public URIHandler(LoadBalancer loadBalancer) {
         super(false);
-        this.loadBalancerController = loadBalancerController;
+        this.loadBalancer = loadBalancer;
     }
 
     private Logger logger = LoggerFactory.getLogger(URIHandler.class);
-    private final static ServerConfig serverConfig = Config.getInstance().getServerConfig();
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest msg) throws Exception {
         String requestUri = msg.uri();
 
-        Url proxy = loadBalancerController.loadBalance(requestUri);
+        Url proxy = loadBalancer.loadBalance(requestUri);
         String proxyHost = proxy.getHost().getHost();
         int proxyPort = proxy.getPort().getPort();
         // String proxyUri = proxy.getUri().toProxyUri(new Uri(requestUri));

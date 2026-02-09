@@ -1,4 +1,4 @@
-package HooYah.Gateway.loadbalancer.domain.vo;
+package HooYah.Gateway.domain.vo;
 
 import java.net.URI;
 import java.util.regex.Pattern;
