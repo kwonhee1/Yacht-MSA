@@ -1,4 +1,4 @@
-package HooYah.Gateway.loadbalancer.domain.vo;
+package HooYah.Gateway.domain.vo;
 
 public enum Protocol {
     http,

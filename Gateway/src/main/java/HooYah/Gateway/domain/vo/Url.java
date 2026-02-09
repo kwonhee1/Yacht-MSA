@@ -1,4 +1,4 @@
-package HooYah.Gateway.loadbalancer.domain.vo;
+package HooYah.Gateway.domain.vo;
 
 // URL = <protocol>://<host>:<port>/<uri>
 public class Url {

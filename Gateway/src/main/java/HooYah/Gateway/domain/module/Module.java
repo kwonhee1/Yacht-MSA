@@ -1,7 +1,7 @@
-package HooYah.Gateway.loadbalancer.domain.module;
+package HooYah.Gateway.domain.module;
 
-import HooYah.Gateway.loadbalancer.domain.service.Service;
-import HooYah.Gateway.loadbalancer.domain.vo.Uri;
+import HooYah.Gateway.domain.service.Service;
+import HooYah.Gateway.domain.vo.Uri;
 import java.util.List;
 
 // module: uri
@@ -28,9 +28,8 @@ public class Module {
         return false;
     }
 
-    public Service matching() {
-        // todo : matching logic
-        return services.getFirst();
+    public List<Service> getServices() {
+        return services;
     }
 
     @Override

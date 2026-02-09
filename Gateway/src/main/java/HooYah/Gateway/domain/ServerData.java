@@ -1,24 +1,27 @@
-package HooYah.Gateway.loadbalancer.conf;
+package HooYah.Gateway.domain;
 
 import HooYah.Gateway.config.ConfigFile;
-import HooYah.Gateway.loadbalancer.domain.module.Modules;
-import HooYah.Gateway.loadbalancer.domain.module.Module;
-import HooYah.Gateway.loadbalancer.domain.module.property.ModuleProperty;
-import HooYah.Gateway.loadbalancer.domain.server.Server;
-import HooYah.Gateway.loadbalancer.domain.server.property.ServerProperty;
+import HooYah.Gateway.domain.module.Module;
+import HooYah.Gateway.domain.module.property.ModuleProperty;
+import HooYah.Gateway.domain.server.Server;
+import HooYah.Gateway.domain.server.property.ServerProperty;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ServerConfig {
+public class ServerData {
 
     private final List<Server> servers;
-    private final Modules modules;
+    private final List<Module> modules;
 
-    private Logger logger = LoggerFactory.getLogger(ServerConfig.class);
+    private Logger logger = LoggerFactory.getLogger(ServerData.class);
 
-    public ServerConfig() {
+    public static ServerData readData() {
+        return new ServerData();
+    }
+
+    private ServerData() {
         servers = initServers();
         modules = initModules();
     }
@@ -27,7 +30,7 @@ public class ServerConfig {
         return servers;
     }
 
-    public Modules getModules() {
+    public List<Module> getModules() {
         return modules;
     }
 
@@ -45,7 +48,7 @@ public class ServerConfig {
         return serverList;
     }
 
-    private Modules initModules() {
+    private List<Module> initModules() {
         List<ModuleProperty> moduleProperties = ((ServersProperty)ConfigFile.SERVER_YML.getValue(ServersProperty.class)).getModuleProperties();
         List<Module> moduleList = moduleProperties.stream()
                 .map(f->f.toModule(servers))
@@ -55,7 +58,7 @@ public class ServerConfig {
             logger.info(module.toString());
         }
 
-        return new Modules(moduleList);
+        return moduleList;
     }
 
     static class ServersProperty {
