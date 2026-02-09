@@ -9,6 +9,7 @@ Gateway/**/**.properties
 ex2/**
 **.md
 **.pem
+**.puml
 
 ec2
 
