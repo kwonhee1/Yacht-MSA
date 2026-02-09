@@ -9,6 +9,11 @@ servers:
       key: /path/client-key.pem
     count: 3
 
+  - name: wiremock
+    host: yacht.r-e.kr
+    protocol: http
+    count: 1
+
   - name: sub
     host: 0.0.0.0
     protocol: http
@@ -64,3 +69,14 @@ modules:
       - name: yacht
         server: sub
         port: 8081
+
+  - match-uri:
+    - /wiremock/
+    services:
+      - name: wiremock
+        server: wiremock
+        port: 9099
+    subs:
+      - name: wiremock
+        server: wiremock
+        port: 9999
