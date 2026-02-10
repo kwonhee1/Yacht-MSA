@@ -28,7 +28,7 @@ modules:
     - /calendar/
     - /alarm/
     services:
-      - name: calendar
+      - name: msa-calendar
         server: mainServer
         port: 9094
     subs:
@@ -40,7 +40,7 @@ modules:
     - /part/
     - /repair/
     services:
-      - name: part
+      - name: msa-part
         server: mainServer
         port: 9093
     subs:
@@ -51,7 +51,7 @@ modules:
   - match-uri:
     - /user/
     services:
-      - name: user
+      - name: msa-user
         server: mainServer
         port: 9091
     subs:
@@ -62,7 +62,7 @@ modules:
   - match-uri:
     - /yacht/
     services:
-      - name: yacht
+      - name: msa-yacht
         server: mainServer
         port: 9092
     subs:

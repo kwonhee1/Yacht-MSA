@@ -1,37 +1,38 @@
-package HooYah.Gateway.domain;
+package HooYah.Gateway.loadbalancer.domain;
 
 import HooYah.Gateway.config.ConfigFile;
-import HooYah.Gateway.domain.module.Module;
-import HooYah.Gateway.domain.module.property.ModuleProperty;
-import HooYah.Gateway.domain.server.Server;
-import HooYah.Gateway.domain.server.property.ServerProperty;
+import HooYah.Gateway.loadbalancer.domain.module.Module;
+import HooYah.Gateway.loadbalancer.domain.module.property.ModuleProperty;
+import HooYah.Gateway.loadbalancer.domain.server.Server;
+import HooYah.Gateway.loadbalancer.domain.server.property.ServerProperty;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ServerData {
+public class ServerServiceContext {
+
+    private static final ServerServiceContext INSTANCE = ServerServiceContext.readData();
 
     private final List<Server> servers;
     private final List<Module> modules;
 
-    private Logger logger = LoggerFactory.getLogger(ServerData.class);
+    private Logger logger = LoggerFactory.getLogger(ServerServiceContext.class);
 
-    public static ServerData readData() {
-        return new ServerData();
+    private static ServerServiceContext readData() {
+        return new ServerServiceContext();
     }
-
-    private ServerData() {
+    private ServerServiceContext() {
         servers = initServers();
         modules = initModules();
     }
 
-    public List<Server> getServers() {
-        return servers;
+    public static List<Server> getServers() {
+        return INSTANCE.servers;
     }
 
-    public List<Module> getModules() {
-        return modules;
+    public static List<Module> getModules() {
+        return INSTANCE.modules;
     }
 
     private List<Server> initServers() {
