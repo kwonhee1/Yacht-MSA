@@ -1,7 +1,7 @@
 package HooYah.Gateway;
 
 import HooYah.Gateway.config.ApplicationConfig;
-import HooYah.Gateway.domain.ServerData;
+import HooYah.Gateway.loadbalancer.domain.ServerServiceContext;
 import HooYah.Gateway.user.JWTConfig;
 import HooYah.Gateway.user.db.DBConfig;
 import HooYah.Gateway.gateway.handler.URIHandler;
@@ -30,11 +30,9 @@ public class YachtApplication {
     private final LoadBalancer loadBalancer;
 
     public YachtApplication() {
-        ServerData serverData = ServerData.readData();
-
         loadBalancer = new LoadBalancer(
-                serverData.getServers(),
-                serverData.getModules()
+                ServerServiceContext.getServers(),
+                ServerServiceContext.getModules()
         );
     }
 

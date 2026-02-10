@@ -2,7 +2,7 @@ package HooYah.Gateway.gateway.handler;
 
 import HooYah.Gateway.gateway.AttributeConfig;
 import HooYah.Gateway.loadbalancer.LoadBalancer;
-import HooYah.Gateway.domain.vo.Url;
+import HooYah.Gateway.loadbalancer.domain.vo.Url;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.FullHttpRequest;

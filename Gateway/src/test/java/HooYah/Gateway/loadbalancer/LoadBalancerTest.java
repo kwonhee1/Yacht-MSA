@@ -1,13 +1,13 @@
 package HooYah.Gateway.loadbalancer;
 
-import HooYah.Gateway.domain.module.Module;
-import HooYah.Gateway.domain.server.Server;
-import HooYah.Gateway.domain.service.Service;
-import HooYah.Gateway.domain.vo.Host;
-import HooYah.Gateway.domain.vo.Port;
-import HooYah.Gateway.domain.vo.Protocol;
-import HooYah.Gateway.domain.vo.Uri;
-import HooYah.Gateway.domain.vo.Url;
+import HooYah.Gateway.loadbalancer.domain.module.Module;
+import HooYah.Gateway.loadbalancer.domain.server.Server;
+import HooYah.Gateway.loadbalancer.domain.service.Service;
+import HooYah.Gateway.loadbalancer.domain.vo.Host;
+import HooYah.Gateway.loadbalancer.domain.vo.Port;
+import HooYah.Gateway.loadbalancer.domain.vo.Protocol;
+import HooYah.Gateway.loadbalancer.domain.vo.Uri;
+import HooYah.Gateway.loadbalancer.domain.vo.Url;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 

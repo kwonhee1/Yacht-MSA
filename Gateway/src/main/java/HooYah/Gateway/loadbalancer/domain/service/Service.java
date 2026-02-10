@@ -1,7 +1,7 @@
-package HooYah.Gateway.domain.service;
+package HooYah.Gateway.loadbalancer.domain.service;
 
-import HooYah.Gateway.domain.server.Server;
-import HooYah.Gateway.domain.vo.Port;
+import HooYah.Gateway.loadbalancer.domain.server.Server;
+import HooYah.Gateway.loadbalancer.domain.vo.Port;
 
 public class Service {
 

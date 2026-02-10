@@ -1,7 +1,7 @@
-package HooYah.Gateway.domain.module;
+package HooYah.Gateway.loadbalancer.domain.module;
 
-import HooYah.Gateway.domain.service.Service;
-import HooYah.Gateway.domain.vo.Uri;
+import HooYah.Gateway.loadbalancer.domain.service.Service;
+import HooYah.Gateway.loadbalancer.domain.vo.Uri;
 import java.util.List;
 
 // module: uri

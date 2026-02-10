@@ -1,6 +1,6 @@
-package HooYah.Gateway.domain.module;
+package HooYah.Gateway.loadbalancer.domain.module;
 
-import HooYah.Gateway.domain.vo.Uri;
+import HooYah.Gateway.loadbalancer.domain.vo.Uri;
 
 public class IllegalUriException extends RuntimeException {
     public IllegalUriException(Uri requestUri) {
