@@ -3,12 +3,21 @@ package HooYah.Gateway.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.javaprop.JavaPropsFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+
 import java.util.Map;
 
+/*
+    ReadConfig file Class
+
+        Usage example
+    ConfigFile.SERVER_YML.getValue(Map.class) : get ServerYML as Map
+    ConfigFile.APPLICATION_PROPERTIES.getValue(String.class, DB_PASSWORD) : get ApplicationProperty.DB_PASSWORD as String
+ */
 public enum ConfigFile {
     APPLICATION_PROPERTIES(FileDirect.ROOT, ".env", FileType.PROPERTIES),
     SERVER_YML(FileDirect.ROOT, "servers.yml",  FileType.YML),
@@ -22,6 +31,11 @@ public enum ConfigFile {
         this.fileType = fileType;
     }
 
+    /*
+        @Param clazz : value Class Type
+        @Param direct : value direct
+         if want "env.DB.PASSWORD" use "getValue(ConfigFile.env, String.class, "DB", "PASSWORD")"
+    */
     public <T> T getValue(Class clazz, String... direct) {
         Object content = this.content;
         for(String dir : direct) {
@@ -57,8 +71,8 @@ public enum ConfigFile {
     }
 
     enum FileDirect {
-        ROOT,
-        RESOURCE; // class path root
+        ROOT, // Root project, same level as src
+        RESOURCE; // class path root, in resources forder
 
         private InputStream getInputStream(String fileName) {
             try {
