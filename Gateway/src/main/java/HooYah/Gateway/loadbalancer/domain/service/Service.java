@@ -1,56 +1,41 @@
 package HooYah.Gateway.loadbalancer.domain.service;
 
-import HooYah.Gateway.loadbalancer.domain.server.Server;
-import HooYah.Gateway.loadbalancer.domain.vo.Port;
+import HooYah.Gateway.loadbalancer.domain.pod.Pod;
+import HooYah.Gateway.loadbalancer.domain.vo.Uri;
+import java.util.List;
 
+// module: uri
 public class Service {
 
-    private final boolean isRunning;
+    private final List<Uri> uriList;
+    private List<Pod> pods;
 
-    private String name;
+    private List<Pod> subPods;
 
-    private final Server server;
-    private final Port port;
-
-    private Service(String name, Server server, Port port, boolean isRunning) {
-        this.name = name;
-        this.server = server; 
-        this.port = port;
-        this.isRunning = isRunning;
-
-        if(isRunning)
-            server.addService(this);
+    public Service(List<Uri> uriList, List<Pod> pods, List<Pod> subPods) {
+        this.uriList = uriList;
+        this.pods = pods;
+        this.subPods = subPods;
     }
 
-    public static Service running(String name, Server server, Port port) {
-        return new Service(name, server, port, true);
+    public boolean matches(Uri requestUri) {
+        for(Uri uri : uriList)
+            if(uri.isMatch(requestUri))
+                return true;
+
+        return false;
     }
 
-    public static Service sub(String name, Server server, Port port) {
-        return new Service(name, server, port, false);
-    }
-
-    // getter
-
-    public String getName() {
-        return name;
-    }
-
-    public Port getPort() {
-        return port;
-    }
-
-    public Server getServer() {
-        return server;
+    public List<Pod> getPods() {
+        return pods;
     }
 
     @Override
     public String toString() {
-        return "Service{" +
-                "isRunning=" + isRunning +
-                ", name='" + name + '\'' +
-                ", server=" + server +
-                ", port=" + port +
+        return "Module{" +
+                "uri=" + uriList +
+                ", pods=" + pods +
+                ", subPods=" + subPods +
                 '}';
     }
 }

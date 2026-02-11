@@ -2,14 +2,13 @@ package HooYah.Gateway.loadbalancer.checker.netty;
 
 import HooYah.Gateway.loadbalancer.checker.CheckerService.StatusType;
 import HooYah.Gateway.loadbalancer.checker.status.ServiceStatus;
-import HooYah.Gateway.loadbalancer.domain.service.Service;
+import HooYah.Gateway.loadbalancer.domain.pod.Pod;
 import HooYah.Gateway.loadbalancer.domain.vo.Host;
 import HooYah.Gateway.loadbalancer.domain.vo.Port;
 import HooYah.Gateway.loadbalancer.checker.CheckerService;
 import HooYah.Gateway.loadbalancer.checker.netty.handler.DockerReceiverHandler;
 import HooYah.Gateway.loadbalancer.checker.netty.handler.TestApiReceiverHandler;
 
-import HooYah.Gateway.loadbalancer.domain.vo.Protocol;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -26,7 +25,6 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.codec.http.HttpObjectAggregator;
-import io.netty.handler.codec.http.HttpServerCodec;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -50,32 +48,32 @@ public class NettyServer {
 
     private final EventLoopGroup eventGroup = new NioEventLoopGroup();
 
-    private final Map<Service, Bootstrap> testApiClients;
-    private final Map<Service, Bootstrap> dockerClients;
+    private final Map<Pod, Bootstrap> testApiClients;
+    private final Map<Pod, Bootstrap> dockerClients;
 
     private final Logger logger = LoggerFactory.getLogger("LoadBalancer(NettyServer)");
 
     public NettyServer(
-            List<Service> serviceList,
+            List<Pod> podList,
             CheckerService checkerService
     ) {
         this.checkerService = checkerService;
 
         // init clients
-        Map<Service, String> containerIdMap = new DockerContainerReader().getDockerContainerIdMap(serviceList);
+        Map<Pod, String> containerIdMap = new DockerContainerReader().getDockerContainerIdMap(podList);
 
         dockerClients = new HashMap<>();
-        testApiClients = new HashMap<>(serviceList.size());
+        testApiClients = new HashMap<>(podList.size());
 
-        for (Service service : serviceList) {
-            testApiClients.put(service, makeClient(
-                    service.getServer().getHost(),
-                    service.getPort(),
-                    new TestApiReceiverHandler(service, checkerService)
+        for (Pod pod : podList) {
+            testApiClients.put(pod, makeClient(
+                    pod.getServer().getHost(),
+                    pod.getPort(),
+                    new TestApiReceiverHandler(pod, checkerService)
             ));
-            dockerClients.put(service, makeClient(
+            dockerClients.put(pod, makeClient(
                     new Host("yacht.r-e.kr"), new Port(2375),
-                    new DockerReceiverHandler(service, containerIdMap.get(service), checkerService)
+                    new DockerReceiverHandler(pod, containerIdMap.get(pod), checkerService)
             ));
         }
     }
@@ -108,30 +106,30 @@ public class NettyServer {
 
     private void sendClients() {
         List<Channel> sendClients = new ArrayList<>(dockerClients.size() + testApiClients.size());
-        for(Service service : dockerClients.keySet()) {
-            ChannelFuture channelFuture = dockerClients.get(service).connect();
+        for(Pod pod : dockerClients.keySet()) {
+            ChannelFuture channelFuture = dockerClients.get(pod).connect();
 
             channelFuture.addListener(future -> {
                 if(channelFuture.isSuccess()) {
                     sendClients.add(channelFuture.channel());
                 } else {
-                    logger.info(String.format("Docker status connection fail server %s service %s", service.getServer().getName(), service.getName()));
-                    checkerService.addStatus(service, ServiceStatus.DEAD, StatusType.Docker);
+                    logger.info(String.format("Docker status connection fail server %s pod %s", pod.getServer().getName(), pod.getName()));
+                    checkerService.addStatus(pod, ServiceStatus.DEAD, StatusType.Docker);
                     channelFuture.channel().close();
                 }
             });
         }
 
-        for(Service service : testApiClients.keySet()) {
-            ChannelFuture channelFuture = testApiClients.get(service).connect();
+        for(Pod pod : testApiClients.keySet()) {
+            ChannelFuture channelFuture = testApiClients.get(pod).connect();
 
             channelFuture.addListener(future -> {
                 if (channelFuture.isSuccess()) {
                     channelFuture.channel().attr(NettyServerContext.sendTimeAttr).set(LocalDateTime.now());
                     sendClients.add(channelFuture.channel());
                 } else {
-                    logger.info(String.format("TestApi status connection fail server %s service %s", service.getServer().getName(), service.getName()));
-                    checkerService.addStatus(service, ServiceStatus.DEAD, StatusType.TestApi);
+                    logger.info(String.format("TestApi status connection fail server %s pod %s", pod.getServer().getName(), pod.getName()));
+                    checkerService.addStatus(pod, ServiceStatus.DEAD, StatusType.TestApi);
                     channelFuture.channel().close();
                 }
             });
@@ -159,9 +157,9 @@ public class NettyServer {
 
         static ObjectMapper objectMapper = NettyServerContext.getObjectMapper();
 
-        public Map<Service, String> getDockerContainerIdMap(List<Service> serviceList) {
+        public Map<Pod, String> getDockerContainerIdMap(List<Pod> podList) {
             List<Map<String, Object>> dockerPsResponse = getContainerIdMap();
-            Map<Service, String> containerIdMap = toDockerContainerId(serviceList, dockerPsResponse);
+            Map<Pod, String> containerIdMap = toDockerContainerId(podList, dockerPsResponse);
 
             return containerIdMap;
         }
@@ -191,25 +189,25 @@ public class NettyServer {
             }
         }
 
-        private Map<Service, String> toDockerContainerId(
-                List<Service> serviceList,
+        private Map<Pod, String> toDockerContainerId(
+                List<Pod> podList,
                 List<Map<String, Object>> dockerPsResponse
         ) {
-            Map<Service, String> containerIdMap = new HashMap<>();
-            for(Service service : serviceList)
-                containerIdMap.put(service, getContainerId(service, dockerPsResponse));
+            Map<Pod, String> containerIdMap = new HashMap<>();
+            for(Pod pod : podList)
+                containerIdMap.put(pod, getContainerId(pod, dockerPsResponse));
 
             return containerIdMap;
         }
 
         private String getContainerId(
-                Service service,
+                Pod pod,
                 List<Map<String, Object>> dockerPsResponse
         ) {
             for(Map<String, Object> container : dockerPsResponse) {
                 String containerName = ((List<String>)container.get("Names")).get(0);
 
-                if(containerName.equals("/" + service.getName()))
+                if(containerName.equals("/" + pod.getName()))
                     return (String) container.get("Id");
             }
 

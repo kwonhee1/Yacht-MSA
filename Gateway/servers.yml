@@ -23,11 +23,11 @@ servers:
       key: /path/client-key.pem
     count: 1
 
-modules:
+services:
   - match-uri:
     - /calendar/
     - /alarm/
-    services:
+    pods:
       - name: msa-calendar
         server: mainServer
         port: 9094
@@ -39,7 +39,7 @@ modules:
   - match-uri:
     - /part/
     - /repair/
-    services:
+    pods:
       - name: msa-part
         server: mainServer
         port: 9093
@@ -50,7 +50,7 @@ modules:
 
   - match-uri:
     - /user/
-    services:
+    pods:
       - name: msa-user
         server: mainServer
         port: 9091
@@ -61,7 +61,7 @@ modules:
 
   - match-uri:
     - /yacht/
-    services:
+    pods:
       - name: msa-yacht
         server: mainServer
         port: 9092
@@ -72,7 +72,7 @@ modules:
 
   - match-uri:
     - /wiremock/
-    services:
+    pods:
       - name: wiremock
         server: wiremock
         port: 9099

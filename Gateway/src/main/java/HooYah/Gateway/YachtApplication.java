@@ -32,7 +32,7 @@ public class YachtApplication {
     public YachtApplication() {
         loadBalancer = new LoadBalancer(
                 ServerServiceContext.getServers(),
-                ServerServiceContext.getModules()
+                ServerServiceContext.getServices()
         );
     }
 
