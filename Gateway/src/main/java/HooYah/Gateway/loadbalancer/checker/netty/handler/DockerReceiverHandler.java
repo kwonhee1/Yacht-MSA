@@ -3,7 +3,7 @@ package HooYah.Gateway.loadbalancer.checker.netty.handler;
 import HooYah.Gateway.loadbalancer.checker.CheckerService.StatusType;
 import HooYah.Gateway.loadbalancer.checker.netty.NettyServerContext;
 import HooYah.Gateway.loadbalancer.checker.status.ServiceStatus;
-import HooYah.Gateway.loadbalancer.domain.service.Service;
+import HooYah.Gateway.loadbalancer.domain.pod.Pod;
 import HooYah.Gateway.loadbalancer.checker.CheckerService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,19 +25,18 @@ public class DockerReceiverHandler extends SimpleChannelInboundHandler<FullHttpR
 
     private static final Logger log = LoggerFactory.getLogger("LoadBalancer(DockerHandler)");
 
-    private final Service service;
+    private final Pod pod;
     private final CheckerService checkerService;
     private final ObjectMapper objectMapper = NettyServerContext.getObjectMapper();
 
     private String containerId;
 
-    public DockerReceiverHandler(
-            Service service,
-            String containerId,
-            CheckerService checkerService
-    ) {
-        this.service = service;
-        this.checkerService = checkerService;
+                public DockerReceiverHandler(
+                        Pod pod,
+                        String containerId,
+                        CheckerService checkerService
+                ) {
+                    this.pod = pod;        this.checkerService = checkerService;
 
         this.containerId = containerId;
     }
@@ -78,7 +77,7 @@ public class DockerReceiverHandler extends SimpleChannelInboundHandler<FullHttpR
                 testApiStatus = ServiceStatus.BAD;
         }
 
-        checkerService.addStatus(service, testApiStatus, StatusType.Docker);
+        checkerService.addStatus(pod, testApiStatus, StatusType.Docker);
 
         ctx.channel().close();
     }

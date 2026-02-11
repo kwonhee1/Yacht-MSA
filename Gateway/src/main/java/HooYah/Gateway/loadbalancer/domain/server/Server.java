@@ -1,6 +1,6 @@
 package HooYah.Gateway.loadbalancer.domain.server;
 
-import HooYah.Gateway.loadbalancer.domain.service.Service;
+import HooYah.Gateway.loadbalancer.domain.pod.Pod;
 import HooYah.Gateway.loadbalancer.domain.vo.Host;
 import HooYah.Gateway.loadbalancer.domain.vo.Protocol;
 import java.util.ArrayList;
@@ -15,7 +15,7 @@ public class Server {
 
     private int maxCount;
 
-    private List<Service> services = new ArrayList<>();
+    private List<Pod> pods = new ArrayList<>();
 
     public Server(String name, Protocol protocol, Host host, int maxCount) {
         this.name = name;
@@ -24,12 +24,12 @@ public class Server {
         this.maxCount = maxCount;
     }
 
-    public void addService(Service service) {
-        services.add(service);
+    public void addPod(Pod pod) {
+        pods.add(pod);
     }
 
-    public void deleteService(Service service) {
-        services.remove(service);
+    public void deletePod(Pod pod) {
+        pods.remove(pod);
     }
 
     public Protocol getProtocol() {
@@ -51,7 +51,7 @@ public class Server {
                 ", protocol=" + protocol +
                 ", host=" + host +
                 ", maxCount=" + maxCount +
-                // ", services=" + services +
+                // ", pods=" + pods +
                 '}';
     }
 }

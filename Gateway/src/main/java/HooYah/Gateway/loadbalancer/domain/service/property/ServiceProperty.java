@@ -1,8 +1,10 @@
 package HooYah.Gateway.loadbalancer.domain.service.property;
 
-import HooYah.Gateway.loadbalancer.domain.server.Server;
 import HooYah.Gateway.loadbalancer.domain.service.Service;
-import HooYah.Gateway.loadbalancer.domain.vo.Port;
+import HooYah.Gateway.loadbalancer.domain.pod.Pod;
+import HooYah.Gateway.loadbalancer.domain.pod.property.PodProperty;
+import HooYah.Gateway.loadbalancer.domain.server.Server;
+import HooYah.Gateway.loadbalancer.domain.vo.Uri;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import lombok.Getter;
@@ -12,24 +14,24 @@ import lombok.Setter;
 @Setter
 public class ServiceProperty {
 
-    @JsonProperty("name")
-    private String name;
-    @JsonProperty("server")
-    private String server;
-    @JsonProperty("port")
-    private int port;
+    @JsonProperty("match-uri")
+    private List<String> matchUriList;
+    @JsonProperty("pods")
+    private List<PodProperty> pods;
+    @JsonProperty("subs")
+    private List<PodProperty> subPods;
 
-    public Service toService(List<Server> servers, boolean isRunning) {
-        Server serverObj = servers.stream()
-            .filter(s -> s.getName().equals(server))
-            .findFirst()
-            .orElseThrow(() -> new RuntimeException("Server " + server + " is not found"));
-        
-        Port portObj = new Port(port);
-        
-        if(isRunning)
-            return Service.running(name, serverObj, portObj);
-        else 
-            return Service.sub(name, serverObj, portObj);
+    public Service toService(List<Server> servers) {
+        List<Pod> podList = pods.stream()
+            .map(sp -> sp.toPod(servers, true))
+            .toList();
+
+        List<Pod> subPodList = subPods.stream()
+            .map(sp -> sp.toPod(servers, false))
+            .toList();
+
+        List<Uri> uriList = matchUriList.stream().map(Uri::new).toList();
+        return new Service(uriList, podList, subPodList);
     }
+
 }

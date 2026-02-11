@@ -1,8 +1,8 @@
 package HooYah.Gateway.loadbalancer;
 
-import HooYah.Gateway.loadbalancer.domain.module.Module;
-import HooYah.Gateway.loadbalancer.domain.server.Server;
 import HooYah.Gateway.loadbalancer.domain.service.Service;
+import HooYah.Gateway.loadbalancer.domain.server.Server;
+import HooYah.Gateway.loadbalancer.domain.pod.Pod;
 import HooYah.Gateway.loadbalancer.domain.vo.Host;
 import HooYah.Gateway.loadbalancer.domain.vo.Port;
 import HooYah.Gateway.loadbalancer.domain.vo.Protocol;
@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 class LoadBalancerTest {
 
     private Server server;
-    private Modules modules;
+    private Services services;
 
     private LoadBalancer loadBalancer;
 
@@ -26,20 +26,20 @@ class LoadBalancerTest {
     void setUp() {
         server = new Server("server1", Protocol.http, new Host("localhost"), 10);
 
-        Module partModule = new Module(
+        Service partService = new Service(
                 List.of(new Uri("/part/"), new Uri("/repair/")),
-                List.of(Service.running("part", server, new Port(8081))),
+                List.of(Pod.running("part", server, new Port(8081))),
                 new ArrayList<>()
         );
 
-        Module calendarModule = new Module(
+        Service calendarService = new Service(
                 List.of(new Uri("/calendar/"), new Uri("/alarm/")),
-                List.of(Service.running("calendar", server, new Port(8080))),
+                List.of(Pod.running("calendar", server, new Port(8080))),
                 new ArrayList<>()
         );
 
         // The Modules collection
-        modules = new Modules(List.of(partModule, calendarModule));
+        services = new Services(List.of(partService, calendarService));
 
         loadBalancer = new LoadBalancer(List.of(server), modules);
     }

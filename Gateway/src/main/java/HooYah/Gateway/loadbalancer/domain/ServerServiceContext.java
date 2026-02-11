@@ -1,8 +1,8 @@
 package HooYah.Gateway.loadbalancer.domain;
 
 import HooYah.Gateway.config.ConfigFile;
-import HooYah.Gateway.loadbalancer.domain.module.Module;
-import HooYah.Gateway.loadbalancer.domain.module.property.ModuleProperty;
+import HooYah.Gateway.loadbalancer.domain.service.Service;
+import HooYah.Gateway.loadbalancer.domain.service.property.ServiceProperty;
 import HooYah.Gateway.loadbalancer.domain.server.Server;
 import HooYah.Gateway.loadbalancer.domain.server.property.ServerProperty;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -15,7 +15,7 @@ public class ServerServiceContext {
     private static final ServerServiceContext INSTANCE = ServerServiceContext.readData();
 
     private final List<Server> servers;
-    private final List<Module> modules;
+    private final List<Service> services;
 
     private Logger logger = LoggerFactory.getLogger(ServerServiceContext.class);
 
@@ -24,15 +24,15 @@ public class ServerServiceContext {
     }
     private ServerServiceContext() {
         servers = initServers();
-        modules = initModules();
+        services = initServices();
     }
 
     public static List<Server> getServers() {
         return INSTANCE.servers;
     }
 
-    public static List<Module> getModules() {
-        return INSTANCE.modules;
+    public static List<Service> getServices() {
+        return INSTANCE.services;
     }
 
     private List<Server> initServers() {
@@ -49,28 +49,28 @@ public class ServerServiceContext {
         return serverList;
     }
 
-    private List<Module> initModules() {
-        List<ModuleProperty> moduleProperties = ((ServersProperty)ConfigFile.SERVER_YML.getValue(ServersProperty.class)).getModuleProperties();
-        List<Module> moduleList = moduleProperties.stream()
-                .map(f->f.toModule(servers))
+    private List<Service> initServices() {
+        List<ServiceProperty> serviceProperties = ((ServersProperty)ConfigFile.SERVER_YML.getValue(ServersProperty.class)).getServiceProperties();
+        List<Service> serviceList = serviceProperties.stream()
+                .map(f->f.toService(servers))
                 .toList();
 
-        for(Module module : moduleList) {
-            logger.info(module.toString());
+        for(Service service : serviceList) {
+            logger.info(service.toString());
         }
 
-        return moduleList;
+        return serviceList;
     }
 
     static class ServersProperty {
         @JsonProperty("servers")
         private List<ServerProperty> servers;
-        @JsonProperty("modules")
-        private List<ModuleProperty> modules;
+        @JsonProperty("services")
+        private List<ServiceProperty> services;
 
-        public ServersProperty(List<ServerProperty> servers, List<ModuleProperty> modules) {
+        public ServersProperty(List<ServerProperty> servers, List<ServiceProperty> services) {
             this.servers = servers;
-            this.modules = modules;
+            this.services = services;
         }
 
         public ServersProperty() {
@@ -80,8 +80,8 @@ public class ServerServiceContext {
             return servers;
         }
 
-        public List<ModuleProperty> getModuleProperties() {
-            return modules;
+        public List<ServiceProperty> getServiceProperties() {
+            return services;
         }
     }
 

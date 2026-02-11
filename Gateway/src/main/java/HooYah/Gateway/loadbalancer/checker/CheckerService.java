@@ -2,7 +2,7 @@ package HooYah.Gateway.loadbalancer.checker;
 
 import HooYah.Gateway.loadbalancer.checker.netty.NettyServer;
 import HooYah.Gateway.loadbalancer.checker.status.ServiceStatus;
-import HooYah.Gateway.loadbalancer.domain.service.Service;
+import HooYah.Gateway.loadbalancer.domain.pod.Pod;
 import HooYah.Gateway.loadbalancer.checker.status.StatusMemory;
 import java.util.HashMap;
 import java.util.List;
@@ -20,24 +20,24 @@ public class CheckerService {
         }
     }
 
-    private Map<Service, StatusMemory> dockerStatusMemory;
-    private Map<Service, StatusMemory> testApiStatusMemory;
+    private Map<Pod, StatusMemory> dockerStatusMemory;
+    private Map<Pod, StatusMemory> testApiStatusMemory;
 
-    public CheckerService(List<Service> serviceList) {
-        this.dockerStatusMemory = new HashMap(serviceList.size());
-        this.testApiStatusMemory = new HashMap(serviceList.size());
-        for(Service service: serviceList) {
-            this.dockerStatusMemory.put(service, new StatusMemory());
-            this.testApiStatusMemory.put(service, new StatusMemory());
+    public CheckerService(List<Pod> podList) {
+        this.dockerStatusMemory = new HashMap(podList.size());
+        this.testApiStatusMemory = new HashMap(podList.size());
+        for(Pod pod: podList) {
+            this.dockerStatusMemory.put(pod, new StatusMemory());
+            this.testApiStatusMemory.put(pod, new StatusMemory());
         }
 
-        new NettyServer(serviceList, this).start();
+        new NettyServer(podList, this).start();
     }
 
     // service 별 status 조회
-    public ServiceStatus getStatus(Service service) {
-        List<ServiceStatus> dockerStatusList = dockerStatusMemory.get(service).getAllStatus();
-        List<ServiceStatus> testApiStatusList = testApiStatusMemory.get(service).getAllStatus();
+    public ServiceStatus getStatus(Pod pod) {
+        List<ServiceStatus> dockerStatusList = dockerStatusMemory.get(pod).getAllStatus();
+        List<ServiceStatus> testApiStatusList = testApiStatusMemory.get(pod).getAllStatus();
 
         for(int i = 0; i < dockerStatusList.size(); i++) {
             ServiceStatus status = getPreviousStatus(dockerStatusList.get(i), testApiStatusList.get(i));
@@ -56,12 +56,16 @@ public class CheckerService {
         return ServiceStatus.UNKNOWN;
     }
 
-    public void addStatus(Service service, ServiceStatus serviceStatus, StatusType statusType) {
-        if(statusType.equals(StatusType.Docker))
-            dockerStatusMemory.get(service).addStatus(serviceStatus);
-        else
-            testApiStatusMemory.get(service).addStatus(serviceStatus);
+        public void addStatus(Pod pod, ServiceStatus serviceStatus, StatusType statusType) {
 
-    }
+            if(statusType.equals(StatusType.Docker))
+
+                dockerStatusMemory.get(pod).addStatus(serviceStatus);
+
+            else
+
+                testApiStatusMemory.get(pod).addStatus(serviceStatus);
+
+        }
 
 }

@@ -1,4 +1,4 @@
-package HooYah.Gateway.loadbalancer.domain.module;
+package HooYah.Gateway.loadbalancer.domain.service;
 
 import HooYah.Gateway.loadbalancer.domain.vo.Uri;
 
