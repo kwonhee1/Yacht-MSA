@@ -62,9 +62,9 @@ public class TestApiReceiverHandler extends SimpleChannelInboundHandler<FullHttp
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpResponse msg) throws Exception {
         // 반환값을 확인한다
-        ServiceStatus dockerStatus;
+        ServiceStatus testApiStatus;
         if(msg.status().code() != 200) {
-            dockerStatus = ServiceStatus.UNKNOWN;
+            testApiStatus = ServiceStatus.UNKNOWN;
             log.info(msg.status() + " , " + msg.content().toString(StandardCharsets.UTF_8));
         }else {
             LocalDateTime sendTime = ctx.channel().attr(NettyServerContext.sendTimeAttr).get();
@@ -73,14 +73,14 @@ public class TestApiReceiverHandler extends SimpleChannelInboundHandler<FullHttp
             long elapsedMilliSecond = Duration.between(sendTime, receiveTime).toMillis();
 
             if(elapsedMilliSecond > 1000)
-                dockerStatus = ServiceStatus.BAD;
+                testApiStatus = ServiceStatus.BAD;
             else
-                dockerStatus = ServiceStatus.GOOD;
+                testApiStatus = ServiceStatus.GOOD;
         }
 
         // status 를 등록한다
-        log.info(ctx.channel().remoteAddress() + " : TestApiResult : " + dockerStatus);
-        checkerService.addStatus(pod, dockerStatus, StatusType.TestApi);
+        log.info(ctx.channel().remoteAddress() + " : TestApiResult : " + testApiStatus);
+        checkerService.addStatus(pod, testApiStatus, StatusType.TestApi);
 
         // channel을 종료한다
         ctx.channel().close();
