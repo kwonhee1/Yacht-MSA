@@ -171,7 +171,7 @@ public class NettyServer {
                 HttpRequest httpRequest =
                         HttpRequest.newBuilder()
                                 .GET()
-                                .uri(URI.create("https://example.com"))
+                                .uri(URI.create("http://yacht.r-e.kr:2375/containers/json?all=ture"))
                                 .build();
 
                 HttpResponse<String> httpResponse = HttpClient.newHttpClient()
@@ -185,6 +185,7 @@ public class NettyServer {
             try {
                 return objectMapper.readValue(response, new TypeReference<List<Map<String, Object>>>() {});
             } catch (IOException e) {
+                e.printStackTrace();
                 return List.of();
             }
         }
@@ -210,7 +211,7 @@ public class NettyServer {
                 if(containerName.equals("/" + pod.getName()))
                     return (String) container.get("Id");
             }
-
+            logger.error(pod.getName() + " : ContainerId not found!");
             return null; // 추후 DockerReceiverHandler에서 fail하게 됨
         }
     }
