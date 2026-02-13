@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   msa-gateway:
-    image: eclipse-temurin:21-jdk-jammy
+    image: amazoncorretto:21-alpine-jdk
     container_name: msa-gateway
     ports:
       - "9090:9090"
@@ -17,7 +17,7 @@ services:
     cpus: 0.2
 
   msa-user:
-    image: eclipse-temurin:21-jdk-jammy
+    image: amazoncorretto:21-alpine-jdk
     container_name: msa-user
     ports:
       - "9091:9091"
@@ -31,7 +31,7 @@ services:
     cpus: 0.35
 
   msa-yacht:
-    image: eclipse-temurin:21-jdk-jammy
+    image: amazoncorretto:21-alpine-jdk
     container_name: msa-yacht
     ports:
       - "9092:9092"
@@ -45,7 +45,7 @@ services:
     cpus: 0.35
 
   msa-part:
-    image: eclipse-temurin:21-jdk-jammy
+    image: amazoncorretto:21-alpine-jdk
     container_name: msa-part
     ports:
       - "9093:9093"
@@ -59,7 +59,7 @@ services:
     cpus: 0.35
 
   msa-calendar:
-    image: eclipse-temurin:21-jdk-jammy
+    image: amazoncorretto:21-alpine-jdk
     container_name: msa-calendar
     ports:
       - "9094:9094"
