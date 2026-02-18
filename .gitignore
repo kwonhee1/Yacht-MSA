@@ -13,6 +13,8 @@ ex2/**
 
 ec2
 
+!**/README.md
+
 HELP.md
 .gradle
 build/
