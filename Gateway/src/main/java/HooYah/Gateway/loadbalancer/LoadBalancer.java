@@ -31,14 +31,23 @@ public class LoadBalancer {
         this.statusChecker = new CheckerService(runningPodList);
     }
 
-    public Url loadBalance(String uri) {
+//    public Url loadBalance(String uri) {
+//        Uri requestUri = new Uri(uri);
+//
+//        Service matchedService = findMatchedService(requestUri);
+//        Pod matchedPod = loadBalancing(matchedService);
+//        Server matchedServer = matchedPod.getServer();
+//
+//        return new Url(matchedServer.getProtocol(), matchedServer.getHost(), matchedPod.getPort(), requestUri);
+//    }
+
+    public Pod loadBalance(String uri) {
         Uri requestUri = new Uri(uri);
 
         Service matchedService = findMatchedService(requestUri);
         Pod matchedPod = loadBalancing(matchedService);
-        Server matchedServer = matchedPod.getServer();
 
-        return new Url(matchedServer.getProtocol(), matchedServer.getHost(), matchedPod.getPort(), requestUri);
+        return matchedPod;
     }
 
     private Service findMatchedService(Uri requestUri) {
@@ -56,12 +65,15 @@ public class LoadBalancer {
         int bestServiceIndex = 0;
         for(int i = 1; i < podList.size(); i++) {
             ServiceStatus bestStatus = statusList.get(bestServiceIndex);
-            if(bestStatus.compareTo(statusList.get(i)) > 0)
+            ServiceStatus eachStatus = statusList.get(i);
+
+            if(bestStatus.compareTo(eachStatus) > 0)
                 bestServiceIndex = i;
         }
 
         if(statusList.get(bestServiceIndex) == ServiceStatus.DEAD) {
             logger.error(" all services are dead!! " + service.toString()); // todo : 다음 로직 고민하기
+            // return null;
         }
 
         return podList.get(bestServiceIndex);

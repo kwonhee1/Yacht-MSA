@@ -114,7 +114,7 @@ public class NettyServer {
                     sendClients.add(channelFuture.channel());
                 } else {
                     logger.info(String.format("Docker status connection fail server %s pod %s", pod.getServer().getName(), pod.getName()));
-                    checkerService.addStatus(pod, ServiceStatus.DEAD, StatusType.Docker);
+                    checkerService.addStatus(pod, ServiceStatus.UNKNOWN, StatusType.Docker);
                     channelFuture.channel().close();
                 }
             });
@@ -129,7 +129,7 @@ public class NettyServer {
                     sendClients.add(channelFuture.channel());
                 } else {
                     logger.info(String.format("TestApi status connection fail server %s pod %s", pod.getServer().getName(), pod.getName()));
-                    checkerService.addStatus(pod, ServiceStatus.DEAD, StatusType.TestApi);
+                    checkerService.addStatus(pod, ServiceStatus.UNKNOWN, StatusType.TestApi);
                     channelFuture.channel().close();
                 }
             });
@@ -179,7 +179,8 @@ public class NettyServer {
 
                 response = httpResponse.body();
             } catch (IOException | InterruptedException e) {
-                throw new RuntimeException(e);
+                e.printStackTrace();
+                return List.of();
             }
 
             try {

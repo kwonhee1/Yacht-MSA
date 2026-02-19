@@ -2,6 +2,7 @@ package HooYah.Gateway;
 
 import HooYah.Gateway.config.ApplicationConfig;
 import HooYah.Gateway.loadbalancer.domain.ServerServiceContext;
+import HooYah.Gateway.provider.ProxyProvider;
 import HooYah.Gateway.user.JWTConfig;
 import HooYah.Gateway.user.db.DBConfig;
 import HooYah.Gateway.gateway.handler.URIHandler;
@@ -27,10 +28,10 @@ public class YachtApplication {
 
     private static final Logger log = LoggerFactory.getLogger(YachtApplication.class);
 
-    private final LoadBalancer loadBalancer;
+    private final ProxyProvider proxyProvider;
 
     public YachtApplication() {
-        loadBalancer = new LoadBalancer(
+        proxyProvider = new ProxyProvider(
                 ServerServiceContext.getServers(),
                 ServerServiceContext.getServices()
         );
@@ -58,7 +59,7 @@ public class YachtApplication {
                             p.addLast(new HttpServerCodec());
                             p.addLast(new HttpObjectAggregator(1048576)); // 최대 1MB
                             p.addLast(new TokenHandler());
-                            p.addLast(new URIHandler(loadBalancer));
+                            p.addLast(new URIHandler(proxyProvider));
 //                             p.addLast(new HttpContentCompressor((CompressionOptions[]) null)); // 얘까지는 필수 (Http 통신을 위함)
 //                             p.addLast(new HttpServerExpectContinueHandler()); // 이놈은 뭘하는지 모르겠음
                             p.addLast(new FrontClientHandler());

@@ -2,6 +2,8 @@ package HooYah.Gateway.loadbalancer.domain.pod;
 
 import HooYah.Gateway.loadbalancer.domain.server.Server;
 import HooYah.Gateway.loadbalancer.domain.vo.Port;
+import HooYah.Gateway.loadbalancer.domain.vo.Uri;
+import HooYah.Gateway.loadbalancer.domain.vo.Url;
 
 public class Pod {
 
@@ -30,18 +32,25 @@ public class Pod {
         return new Pod(name, server, port, false);
     }
 
+    public Url toUrl(Uri requestUri) {
+        Server matchedServer = getServer();
+
+        return new Url(matchedServer.getProtocol(), matchedServer.getHost(), port, requestUri);
+    }
+
     // getter
 
     public String getName() {
         return name;
     }
-
     public Port getPort() {
         return port;
     }
-
     public Server getServer() {
         return server;
+    }
+    public boolean isRunning() {
+        return isRunning;
     }
 
     @Override

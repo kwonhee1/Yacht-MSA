@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 class LoadBalancerTest {
 
     private Server server;
-    private Services services;
+    private List<Service> services;
 
     private LoadBalancer loadBalancer;
 
@@ -39,20 +39,20 @@ class LoadBalancerTest {
         );
 
         // The Modules collection
-        services = new Services(List.of(partService, calendarService));
+        services = List.of(partService, calendarService);
 
-        loadBalancer = new LoadBalancer(List.of(server), modules);
+        loadBalancer = new LoadBalancer(List.of(server), services);
     }
 
     // 다른 방법의 test 없s나?
     @Test
     public void testUserUriMatching() {
-        Url proxy1 = loadBalancer.loadBalance("/repair/test?test=test");
+        Url proxy1 = loadBalancer.loadBalance("/repair/test?test=test").toUrl(new Uri("/repair/test?test=test"));
 
         Assertions.assertEquals(proxy1.getPort().getPort(), 8081);
         Assertions.assertEquals(proxy1.getUri().getUri(), "/repair/test?test=test");
 
-        Url proxy2 = loadBalancer.loadBalance("/calendar?test=test");
+        Url proxy2 = loadBalancer.loadBalance("/calendar?test=test").toUrl(new Uri("/calendar?test=test"));
 
         Assertions.assertEquals(proxy2.getPort().getPort(), 8080);
         Assertions.assertEquals(proxy2.getUri().getUri(), "/calendar?test=test");

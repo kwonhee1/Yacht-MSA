@@ -1,6 +1,7 @@
 package HooYah.Gateway.gateway.handler;
 
 import HooYah.Gateway.gateway.AttributeConfig;
+import HooYah.Gateway.loadbalancer.domain.vo.Url;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFuture;
@@ -31,8 +32,10 @@ public class FrontClientHandler extends SimpleChannelInboundHandler<FullHttpRequ
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest msg) throws Exception {
-        String toHost = ctx.channel().attr(AttributeConfig.Host).get();
-        int toPort = ctx.channel().attr(AttributeConfig.Port).get();
+        Url proxyUrl = ctx.channel().attr(AttributeConfig.ProxyResource).get().get();
+
+        String toHost = proxyUrl.getHost().getHost();
+        int toPort = proxyUrl.getPort().getPort();
 
         Bootstrap bootstrap = new Bootstrap();
         bootstrap.group(ctx.channel().eventLoop())

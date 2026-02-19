@@ -1,5 +1,6 @@
 package HooYah.Gateway.gateway.handler;
 
+import HooYah.Gateway.gateway.AttributeConfig;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -35,6 +36,7 @@ public class BackendHandler extends SimpleChannelInboundHandler<FullHttpResponse
         }
 
         inputData.release(); // copy해서 들어온 값 release
+        inboundChannel.attr(AttributeConfig.ProxyResource).get().release();
     }
 
     @Override

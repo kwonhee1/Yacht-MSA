@@ -1,37 +1,54 @@
 package HooYah.Gateway.gateway.handler;
 
 import HooYah.Gateway.gateway.AttributeConfig;
-import HooYah.Gateway.loadbalancer.LoadBalancer;
 import HooYah.Gateway.loadbalancer.domain.vo.Url;
+import HooYah.Gateway.provider.ProxyProvider;
+import HooYah.Gateway.provider.Resource;
+import HooYah.Gateway.provider.TooManyRequest;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class URIHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
-    private final LoadBalancer loadBalancer;
+    private final ProxyProvider proxyProvider;
 
-    public URIHandler(LoadBalancer loadBalancer) {
+    public URIHandler(ProxyProvider proxyProvider) {
         super(false);
-        this.loadBalancer = loadBalancer;
+        this.proxyProvider = proxyProvider;
     }
 
-    private Logger logger = LoggerFactory.getLogger(URIHandler.class);
+    private Logger logger = LoggerFactory.getLogger("Netty(URIHandler) ");
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest msg) throws Exception {
         String requestUri = msg.uri();
 
-        Url proxy = loadBalancer.loadBalance(requestUri);
+        Resource<Url> proxyResource;
+        try {
+            proxyResource = proxyProvider.provide(requestUri);
+        } catch (TooManyRequest e) {
+            logger.error("proxy fail(TooManyRequest) : " + requestUri);
+            FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.TOO_MANY_REQUESTS);
+            ctx.writeAndFlush(response);
+            ctx.channel().close();
+            return;
+        }
+
+        ctx.channel().attr(AttributeConfig.ProxyResource).set(proxyResource);
+
+        // print log
+        Url proxy = proxyResource.get();
         String proxyHost = proxy.getHost().getHost();
         int proxyPort = proxy.getPort().getPort();
-        // String proxyUri = proxy.getUri().toProxyUri(new Uri(requestUri));
         String proxyUri = proxy.getUri().getUri();
 
-        ctx.channel().attr(AttributeConfig.Host).set(proxyHost);
-        ctx.channel().attr(AttributeConfig.Port).set(proxyPort);
         msg.setUri(proxyUri);
 
         logger.info("proxy " + requestUri + " -> " + proxyHost + ":" + proxyPort + proxyUri);

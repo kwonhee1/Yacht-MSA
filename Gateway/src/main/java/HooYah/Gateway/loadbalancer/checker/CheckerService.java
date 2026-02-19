@@ -45,27 +45,23 @@ public class CheckerService {
                 return status;
         }
 
+        // when all status are UNKNOWN -> pod is Dead
         return ServiceStatus.DEAD;
     }
 
     private ServiceStatus getPreviousStatus(ServiceStatus dockerStatus, ServiceStatus testApiStatus) {
-        if(dockerStatus != ServiceStatus.UNKNOWN)
+        if(dockerStatus != null && dockerStatus != ServiceStatus.UNKNOWN)
             return dockerStatus;
-        if(testApiStatus != ServiceStatus.UNKNOWN)
+        if(testApiStatus != null && testApiStatus != ServiceStatus.UNKNOWN)
             return testApiStatus;
         return ServiceStatus.UNKNOWN;
     }
 
-        public void addStatus(Pod pod, ServiceStatus serviceStatus, StatusType statusType) {
-
-            if(statusType.equals(StatusType.Docker))
-
-                dockerStatusMemory.get(pod).addStatus(serviceStatus);
-
-            else
-
-                testApiStatusMemory.get(pod).addStatus(serviceStatus);
-
-        }
+    public void addStatus(Pod pod, ServiceStatus serviceStatus, StatusType statusType) {
+        if (statusType.equals(StatusType.Docker))
+            dockerStatusMemory.get(pod).addStatus(serviceStatus);
+        else
+            testApiStatusMemory.get(pod).addStatus(serviceStatus);
+    }
 
 }
