@@ -1,6 +1,7 @@
 package HooYah.Cache;
 
 import HooYah.Cache.pool.Pool;
+import HooYah.Cache.template.CacheTemplate;
 import HooYah.RedisData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -27,7 +28,7 @@ public class CacheServiceGenericsTest {
     @Test
     @DisplayName("getOrSelect with Integer")
     public void getOrSelect_Integer() {
-        CacheService<Integer> cacheService = new CacheServiceImpl<>("integer", pool, Integer.class);
+        CacheService<Integer> cacheService = new CacheServiceImpl<>("integer", new CacheTemplate(pool), Integer.class);
         CacheService.Select<Integer> select = spy(new CacheService.Select<>() {
             @Override
             public Integer select() {
@@ -45,7 +46,7 @@ public class CacheServiceGenericsTest {
     @Test
     @DisplayName("getOrSelect with Long")
     public void getOrSelect_Long() {
-        CacheService<Long> cacheService = new CacheServiceImpl<>("long", pool, Long.class);
+        CacheService<Long> cacheService = new CacheServiceImpl<>("long", new CacheTemplate(pool), Long.class);
         CacheService.Select<Long> select = spy(new CacheService.Select<>() {
             @Override
             public Long select() {
@@ -63,7 +64,7 @@ public class CacheServiceGenericsTest {
     @Test
     @DisplayName("getOrSelect with Map (HashMap)")
     public void getOrSelect_Map() {
-        CacheService<Map> cacheService = new CacheServiceImpl<>("map", pool, Map.class);
+        CacheService<Map> cacheService = new CacheServiceImpl<>("map", new CacheTemplate(pool), Map.class);
         CacheService.Select<Map> select = spy(new CacheService.Select<>() {
             @Override
             public Map select() {
@@ -83,7 +84,7 @@ public class CacheServiceGenericsTest {
     @Test
     @DisplayName("getOrSelect with Custom Class (RedisData)")
     public void getOrSelect_CustomClass() {
-        CacheService<RedisData> cacheService = new CacheServiceImpl<>("custom", pool, RedisData.class);
+        CacheService<RedisData> cacheService = new CacheServiceImpl<>("custom", new CacheTemplate(pool), RedisData.class);
         CacheService.Select<RedisData> select = spy(new CacheService.Select<>() {
             @Override
             public RedisData select() {
@@ -101,7 +102,7 @@ public class CacheServiceGenericsTest {
     @Test
     @DisplayName("getOrSelect with List (ArrayList)")
     public void getOrSelect_List() {
-        CacheService<List> cacheService = new CacheServiceImpl<>("list", pool, List.class);
+        CacheService<List> cacheService = new CacheServiceImpl<>("list", new CacheTemplate(pool), List.class);
         CacheService.Select<List> select = spy(new CacheService.Select<>() {
             @Override
             public List select() {
@@ -120,7 +121,7 @@ public class CacheServiceGenericsTest {
 
     @Test
     public void getOrSelect_LongList() {
-        CacheService<List> cacheService = new CacheServiceImpl<>("longlist", pool, List.class);
+        CacheService<List> cacheService = new CacheServiceImpl<>("longlist", new CacheTemplate(pool), List.class);
         CacheService.Select<List> select = spy(new CacheService.Select<>() {
             @Override
             public List select() {
@@ -142,7 +143,7 @@ public class CacheServiceGenericsTest {
     @Test
     @DisplayName("getListOrSelect with List<Integer>")
     public void getListOrSelect_IntegerList() {
-        CacheService<Integer> cacheService = new CacheServiceImpl<>("integerList", pool, Integer.class);
+        CacheService<Integer> cacheService = new CacheServiceImpl<>("integerList", new CacheTemplate(pool), Integer.class);
         CacheService.Select<List<Integer>> select = spy(new CacheService.Select<>() {
             @Override
             public List<Integer> select() {
@@ -160,7 +161,7 @@ public class CacheServiceGenericsTest {
     @Test
     @DisplayName("getListOrSelect with List<CustomClass>")
     public void getListOrSelect_CustomClassList() {
-        CacheService<RedisData> cacheService = new CacheServiceImpl<>("customList", pool, RedisData.class);
+        CacheService<RedisData> cacheService = new CacheServiceImpl<>("customList", new CacheTemplate(pool), RedisData.class);
         CacheService.Select<List<RedisData>> select = spy(new CacheService.Select<>() {
             @Override
             public List<RedisData> select() {
@@ -180,7 +181,7 @@ public class CacheServiceGenericsTest {
     @Test
     @DisplayName("getListOrSelect with List<Map>")
     public void getListOrSelect_MapList() {
-        CacheService<Map> cacheService = new CacheServiceImpl<>("mapList", pool, Map.class);
+        CacheService<Map> cacheService = new CacheServiceImpl<>("mapList", new CacheTemplate(pool), Map.class);
         CacheService.Select<List<Map>> select = spy(new CacheService.Select<>() {
             @Override
             public List<Map> select() {

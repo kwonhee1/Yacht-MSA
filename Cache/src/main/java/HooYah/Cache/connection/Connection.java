@@ -1,10 +1,13 @@
 package HooYah.Cache.connection;
 
-public interface Connection extends AutoCloseable {
-    Pipeline pipeline();
+import java.util.List;
 
-    void set(String key, String value, SaveSecond second);
-    String get(String key, SaveSecond second);
+public interface Connection extends AutoCloseable {
+
+    Connection set(String key, String value, SaveSecond second);
+    Connection get(String key, SaveSecond second);
+
+    List<String> sync();
 
     @Override
     void close();

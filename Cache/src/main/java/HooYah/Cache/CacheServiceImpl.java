@@ -3,7 +3,8 @@ package HooYah.Cache;
 import HooYah.Cache.connection.SaveSecond;
 import HooYah.Cache.pool.JedisPool;
 import HooYah.Cache.pool.Pool;
-import HooYah.Cache.template.TemplateImpl;
+import HooYah.Cache.template.CacheTemplate;
+import HooYah.Cache.template.Template;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,35 +13,34 @@ import java.util.List;
 public class CacheServiceImpl<T> implements CacheService<T> {
 
     private final String category;
-    private final TemplateImpl templateImpl;
+    private final Template cacheTemplate;
     private final Class<T> type;
 
     /*
         ObjectMapper must init in Redis library
         외부에서 주입을 받게 되면 -> 입력될 때 사용되는 ObjectMapper와 출력될때 사용되는 ObjectMapper 버전 차이로 인해 작동하지 않을 수있음!
      */
-    private final ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = initObjectMapper();
 
     private SaveSecond saveSecond = new SaveSecond(3600L); // default value 1 hour
 
     public CacheServiceImpl(
             String category,
-            Pool pool,
+            Template template,
             Class<T> type
     ) {
-        this.templateImpl = new TemplateImpl(pool);
+        this.cacheTemplate = template;
         this.category = category;
         this.type = type;
-        this.objectMapper = initObjectMapper();
     }
 
     public CacheServiceImpl(
             String category,
-            JedisPool jedisPool,
+            Template template,
             Long second,
             Class<T> type
     ) {
-        this(category, jedisPool, type);
+        this(category, template, type);
         this.saveSecond = new SaveSecond(second);
     }
 
@@ -55,7 +55,7 @@ public class CacheServiceImpl<T> implements CacheService<T> {
         String key = toKey(category, id);
         CacheValue cacheValue = CacheValue.ofSource(objectToString(value));
 
-        templateImpl.add(key, cacheValue.getString(), saveSecond);
+        cacheTemplate.add(key, cacheValue.getString(), saveSecond);
     }
 
     @Override
@@ -69,7 +69,7 @@ public class CacheServiceImpl<T> implements CacheService<T> {
     }
 
     private T getOrSelect(String key, CacheService.Select<T> select) {
-        String cacheString = templateImpl.get(key, saveSecond);
+        String cacheString = cacheTemplate.get(key, saveSecond);
         CacheValue cacheValue = CacheValue.ofSaved(cacheString);
 
         if(cacheValue.hasValue())
@@ -79,7 +79,7 @@ public class CacheServiceImpl<T> implements CacheService<T> {
         T selectedData = select.select();
 
         CacheValue newValue = CacheValue.ofSource(objectToString(selectedData));
-        templateImpl.add(key, newValue.getString(), saveSecond);
+        cacheTemplate.add(key, newValue.getString(), saveSecond);
 
         return selectedData;
     }
@@ -105,7 +105,7 @@ public class CacheServiceImpl<T> implements CacheService<T> {
     // todo : method name
     private List<T> getListOrSelectPrivate(List<String> keyList, CacheService.Select<List<T>> select) {
         List<CacheValue> cacheValueList =
-                templateImpl.getList(keyList, saveSecond)
+                cacheTemplate.getList(keyList, saveSecond)
                     .stream()
                     .map(CacheValue::ofSaved)
                     .toList();
@@ -134,7 +134,7 @@ public class CacheServiceImpl<T> implements CacheService<T> {
                         .map(cacheValue -> cacheValue.getString()) // List<CacheValue> -> List<String>
                         .toList();
 
-        templateImpl.addAll(keyList, writeDataList, saveSecond);
+        cacheTemplate.addAll(keyList, writeDataList, saveSecond);
         return selectedData;
     }
 

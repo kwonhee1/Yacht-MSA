@@ -5,7 +5,10 @@ import HooYah.Cache.CacheService;
 import HooYah.Cache.CacheService.Select;
 import HooYah.Cache.CacheServiceImpl;
 import HooYah.Cache.pool.Pool;
+import HooYah.Cache.template.CacheTemplate;
+import java.lang.ref.WeakReference;
 import java.util.Map;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,7 +24,8 @@ public class MainTest {
     @BeforeEach
     public void init() {
         pool = Cache.generateInMemoryPool();
-        testCacheService = new CacheServiceImpl("test", pool, Map.class);
+        testCacheService = Cache.cacheService("test", pool, Map.class);
+        testCacheService = new CacheServiceImpl("test", new CacheTemplate(pool), Map.class);
 
         selectOne = Mockito.spy(new Select<Object>() {
             @Override

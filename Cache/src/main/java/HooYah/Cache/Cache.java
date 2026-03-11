@@ -3,6 +3,8 @@ package HooYah.Cache;
 import HooYah.Cache.pool.InMemoryPool;
 import HooYah.Cache.pool.JedisPool;
 import HooYah.Cache.pool.Pool;
+import HooYah.Cache.template.CacheTemplate;
+import HooYah.Cache.template.Template;
 import java.util.Map;
 
 /*
@@ -18,12 +20,16 @@ public class Cache {
         return new InMemoryPool();
     }
 
+    public static <T> Template cacheTemplate(Pool pool) {
+        return new CacheTemplate(pool);
+    }
+
     public static <T> CacheService<T> cacheService(String category, Pool pool, Class<T> type) {
-        return new CacheServiceImpl<>(category, pool, type);
+        return new CacheServiceImpl<>(category, cacheTemplate(pool), type);
     }
 
     public static CacheService cacheService(String category, Pool pool) {
-        return new CacheServiceImpl(category, pool, Map.class);
+        return new CacheServiceImpl(category, cacheTemplate(pool), Map.class);
     }
 
 }
