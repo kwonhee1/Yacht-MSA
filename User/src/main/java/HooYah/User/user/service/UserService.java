@@ -12,6 +12,7 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Service
 @RequiredArgsConstructor
@@ -20,18 +21,22 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Transactional
-    public User registerWithEmail(RegisterDto dto) {
-        if(userRepository.findByEmail(dto.getEmail()).isPresent())
-            throw new CustomException(ErrorCode.CONFLICT);
+    private final TransactionTemplate transactionTemplate;
 
+    public User registerWithEmail(RegisterDto dto) {
         String encodedPassword = passwordEncoder.encode(dto.getPassword());
 
-        User user = dto.toEntity(encodedPassword);
-        return userRepository.save(user);
+        User createdUser = transactionTemplate.execute((status)->{
+            if(userRepository.findByEmailWithLock(dto.getEmail()).isPresent())
+                throw new CustomException(ErrorCode.CONFLICT);
+
+            User user = dto.toEntity(encodedPassword);
+            return userRepository.save(user);
+        });
+
+        return createdUser;
     }
 
-    @Transactional
     public User login(LoginDto dto) {
         User user = userRepository.findByEmail(dto.getEmail()).orElseThrow(
                 ()->new CustomException(ErrorCode.NOT_FOUND)

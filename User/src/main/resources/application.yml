@@ -20,6 +20,12 @@ spring:
     hibernate:
       ddl-auto: update
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: metrics
+
 token:
   SECRET_KEY: ${SECRET_KEY}
   EXPIRATION_SECOND: 999999999
