@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 
 public class FrontClientHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
-    private final Logger logger = LoggerFactory.getLogger(FrontClientHandler.class);
+    private final Logger logger = LoggerFactory.getLogger("Proxy(Front) :: ");
     private final Pattern pattern;
 
     public FrontClientHandler() {

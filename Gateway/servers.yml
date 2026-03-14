@@ -3,10 +3,6 @@ servers:
     host: localhost
 #     192.168.0.2
     protocol: http
-    docker:
-      ca: /path/ca.pem
-      cert: /path/cert.pem
-      key: /path/client-key.pem
     count: 3
 
   - name: wiremock
@@ -14,13 +10,14 @@ servers:
     protocol: http
     count: 1
 
+  - name: raspberry
+    host: yacht.r-e.kr
+    protocol: http
+    count: 1
+
   - name: sub
     host: 0.0.0.0
     protocol: http
-    docker:
-      ca: /path/ca.pem
-      cert: /path/cert.pem
-      key: /path/client-key.pem
     count: 1
 
 services:
@@ -53,6 +50,9 @@ services:
     pods:
       - name: msa-user
         server: mainServer
+        port: 9091
+      - name: raspberry-user
+        server: sub
         port: 9091
     subs:
       - name: user

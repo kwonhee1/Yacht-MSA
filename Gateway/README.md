@@ -167,11 +167,6 @@ classDiagram
         - sendClients
     }
     
-%%    note for NettyServer "
-%%    NettyServer를 사용해
-%%    ServerStatus를 위한 값을 수집함
-%%    "
-    
     class ServerServiceContext {
         - private readData()
         + public getServers()
@@ -180,8 +175,7 @@ classDiagram
     
     Gateway --> LoadBalancer : request
     
-    LoadBalancer --> LoadBalancer : findMatchedModule
-    LoadBalancer --> CheckerService : getStatusList(List Service)
+    LoadBalancer --> CheckerService : getStatus
     LoadBalancer --> ServerServiceContext : getServers, Modules data
     
     CheckerService --> StatusMemory : getAllStatus

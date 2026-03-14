@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 
 public class BackendHandler extends SimpleChannelInboundHandler<FullHttpResponse> {
 
-    private static final Logger log = LoggerFactory.getLogger(BackendHandler.class);
+    private static final Logger log = LoggerFactory.getLogger("Proxy(Backend) :: ");
 
     private final Channel inboundChannel;
     private final FullHttpRequest inputData;
