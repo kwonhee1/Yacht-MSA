@@ -11,6 +11,6 @@ import lombok.Setter;
 public class InviteYachtDto {
 
     @NotNull
-    private Long code;
+    private String code;
 
 }

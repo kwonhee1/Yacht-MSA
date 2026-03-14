@@ -39,20 +39,18 @@ public class YachtUserService {
                 .toList();
     }
 
-    public long getYachtCode(Long yachtId, Long userId) {
+    public String getYachtCode(Long yachtId, Long userId) {
         Optional<Yacht> yacht = yachtUserRepository.findYacht(yachtId, userId);
 
         if(yacht.isEmpty())
             throw new CustomException(ErrorCode.NOT_FOUND);
 
-        return toHash(yacht.get().getId());
+        return yacht.get().getInviteCode();
     }
 
     @Transactional
-    public void inviteYachtByHash(Long code, Long userId) {
-        long yachtId = decodeHash(code);
-
-        Yacht yacht = yachtRepository.findById(yachtId).orElseThrow(
+    public void inviteYachtByHash(String code, Long userId) {
+        Yacht yacht = yachtRepository.findByInviteCode(code).orElseThrow(
                 ()->new CustomException(ErrorCode.NOT_FOUND)
         );
 
@@ -84,14 +82,6 @@ public class YachtUserService {
         }
 
         return yachtUserIdList;
-    }
-
-    private long toHash(Long id) {
-        return id; // 추후 hash 적용
-    }
-
-    private long decodeHash(Long hash) {
-        return hash; // 추후 hash 적용
     }
 
 }

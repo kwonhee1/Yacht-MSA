@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.List;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,6 +35,10 @@ public class Yacht {
 
     @Column
     private String nickName;
+
+    @Column(unique = true, nullable = false)
+    @Builder.Default
+    private String inviteCode = UUID.randomUUID().toString();
 
     @OneToMany(mappedBy = "yacht", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JsonIgnore

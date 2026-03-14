@@ -63,7 +63,7 @@ public class YachtUserController {
 
     @GetMapping("/invite")
     public ResponseEntity getYachtInviteCode(@RequestParam("yachtId") Long yachtId, HttpServletRequest request) {
-        Long code = yachtUserService.getYachtCode(yachtId, getUserId(request));
+        String code = yachtUserService.getYachtCode(yachtId, getUserId(request));
         return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", Map.of("code", code)));
     }
 
