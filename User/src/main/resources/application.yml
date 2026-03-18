@@ -31,3 +31,7 @@ token:
   EXPIRATION_SECOND: 999999999
     # test 환경 무한대 설정
     # 86400000
+
+web-client:
+  gateway: ${GATEWAY_URL}
+  alarm-token: /alarm/proxy/token

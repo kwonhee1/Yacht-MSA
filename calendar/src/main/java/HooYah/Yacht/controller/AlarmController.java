@@ -1,6 +1,8 @@
 package HooYah.Yacht.controller;
 
 import HooYah.Yacht.SuccessResponse;
+import HooYah.Yacht.dto.AlarmDto;
+import HooYah.Yacht.dto.request.AlarmTokenDto;
 import HooYah.Yacht.excetion.CustomException;
 import HooYah.Yacht.excetion.ErrorCode;
 import HooYah.Yacht.service.AlarmService;
@@ -12,32 +14,38 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping("/alarm/api/")
+@RequestMapping("/alarm")
 public class AlarmController {
 
     private final AlarmService alarmService;
     private final FCMService fCMService;
 
-    @GetMapping
+    @GetMapping("/api")
     public ResponseEntity getAlarmList(HttpServletRequest request) {
         Long userId = getUserId(request);
         return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", alarmService.getAlarmList(userId)));
     }
 
-    @PostMapping
+    @PostMapping("/api")
     @Scheduled(cron = "0 0 9 * * *") // 매일 아침 9시 전송됨
     public ResponseEntity sendAlarm() {
         log.info("total send alarm start");
         alarmService.sendAlarm();
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/proxy/token")
+    public ResponseEntity saveToken(@RequestBody AlarmTokenDto dto) {
+        alarmService.saveToken(dto.getUserId(), dto.getToken());
         return ResponseEntity.ok().build();
     }
 

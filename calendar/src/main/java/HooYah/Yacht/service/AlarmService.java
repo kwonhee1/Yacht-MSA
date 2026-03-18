@@ -1,15 +1,19 @@
 package HooYah.Yacht.service;
 
 import HooYah.Yacht.domain.Alarm;
+import HooYah.Yacht.domain.AlarmToken;
 import HooYah.Yacht.dto.AlarmDto;
 import HooYah.Yacht.excetion.CustomException;
 import HooYah.Yacht.excetion.ErrorCode;
 import HooYah.Yacht.repository.AlarmRepository;
+import HooYah.Yacht.repository.AlarmTokenRepository;
 import HooYah.Yacht.webclient.WebClient;
 import HooYah.Yacht.webclient.WebClient.HttpMethod;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -20,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AlarmService {
 
     private final AlarmRepository alarmRepository;
+    private final AlarmTokenRepository alarmTokenRepository;
     private final FCMService fCMService;
 
     private final AskService askService;
@@ -34,12 +39,13 @@ public class AlarmService {
     @Value("${web-client.yacht-user-list}")
     private String yachtUserListURI;
 
-    @Value("${web-client.user-token-list}")
-    private String userTokenListURI;
-
-    @Deprecated
-    public void createAlarm() {
-        // can not create, update, delete alarm by user!
+    @Transactional
+    public void saveToken(Long userId, String token) {
+        alarmTokenRepository.findByUserId(userId)
+                .ifPresentOrElse(
+                        alarmToken -> alarmToken.updateToken(token),
+                        () -> alarmTokenRepository.save(new AlarmToken(userId, token))
+                );
     }
 
     public List<AlarmDto> getAlarmList(Long userId) {
@@ -88,30 +94,23 @@ public class AlarmService {
         if(userIdList == null || userIdList.size() != yachtIdList.size())
             throw new CustomException(ErrorCode.API_FAIL, "");
 
-        // List<List<UserId>> -> List<List<String::userToken>> :: ask user domain
-        List<Long> flatUserIdList = new ArrayList<>();
-        for(List<Long> userIds : userIdList) {
-            flatUserIdList.addAll(userIds);
-        }
+        // Collect all unique user IDs
+        List<Long> flatUserIdList = userIdList.stream()
+                .flatMap(List::stream)
+                .distinct()
+                .collect(Collectors.toList());
 
-        List<String> flatUserTokenList = (List<String>) webClient.webClient(
-                gatewayURL + userTokenListURI, 
-                HttpMethod.POST, 
-                flatUserIdList
-        ).toList();
-        if(flatUserTokenList == null || flatUserTokenList.size() != flatUserIdList.size())
-            throw new CustomException(ErrorCode.API_FAIL, "");
+        // Fetch tokens from local repository
+        Map<Long, String> userTokenMap = alarmTokenRepository.findAllByUserIdIn(flatUserIdList).stream()
+                .collect(Collectors.toMap(AlarmToken::getUserId, AlarmToken::getToken));
 
-        // List<String> -> List<List<String>> (reconstruct using subList)
-        List<List<String>> userTokenList = new ArrayList<>(userIdList.size());
-        int startIndex = 0;
-        for(int i = 0; i < userIdList.size(); i++) {
-            int endIndex = startIndex + userIdList.get(i).size();
-            userTokenList.add(i, flatUserTokenList.subList(startIndex, endIndex));
-            startIndex = endIndex;
-        }
-
-        return userTokenList;
+        // Reconstruct List<List<String>> mapping each userId to its token
+        return userIdList.stream()
+                .map(ids -> ids.stream()
+                        .map(userTokenMap::get)
+                        .filter(token -> token != null)
+                        .collect(Collectors.toList()))
+                .collect(Collectors.toList());
     }
 
     private List<Alarm> getAlarms() {

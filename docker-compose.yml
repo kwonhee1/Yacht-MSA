@@ -75,4 +75,3 @@ services:
 networks:
   mysql-network:
     external: true
-    driver: bridge

@@ -33,9 +33,6 @@ public class User {
     @Column
     private String name;
 
-    @Column
-    private String token;
-
     public void updatePassword(String newPassword, PasswordEncoder passwordEncoder) {
         if(passwordEncoder.matches(newPassword, password)) {}
             this.password = newPassword;
@@ -48,18 +45,11 @@ public class User {
         throw new CustomException(ErrorCode.BAD_REQUEST);
     }
 
-    public void setToken(String token) {
-        if(token != null)
-            this.token = token;
-    }
-
     @Builder
-    public User(String email, String password, String name, String token) {
-        this.id = id;
+    public User(String email, String password, String name) {
         this.email = email;
         this.password = password;
         this.name = name;
-        this.token = token;
     }
 
 }

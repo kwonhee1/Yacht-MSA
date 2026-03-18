@@ -11,12 +11,14 @@ import HooYah.Yacht.SuccessResponse;
 import HooYah.Yacht.excetion.CustomException;
 import HooYah.Yacht.excetion.ErrorCode;
 import HooYah.Yacht.util.ListUtil;
+import HooYah.Yacht.webclient.WebClient;
+import HooYah.Yacht.webclient.WebClient.HttpMethod;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -34,10 +36,26 @@ public class UserController {
 
     private final UserService userService;
     private final UserRepository userRepository;
+    private final WebClient webClient;
+
+    @Value("${web-client.gateway}")
+    private String gatewayURL;
+
+    @Value("${web-client.alarm-token}")
+    private String alarmTokenURI;
 
     @PostMapping("/public/register")
     public ResponseEntity register(@RequestBody @Valid RegisterDto dto) {
-        userService.registerWithEmail(dto);
+        User user = userService.registerWithEmail(dto);
+
+        if(dto.getToken() != null) {
+            webClient.webClientAsync(
+                    gatewayURL + alarmTokenURI,
+                    HttpMethod.POST,
+                    Map.of("userId", user.getId(), "token", dto.getToken())
+            );
+        }
+
         return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", null));
     }
 
@@ -79,14 +97,6 @@ public class UserController {
 
         List<UserInfoDto> userInfoList = sortedUserList.stream().map(UserInfoDto::of).toList();
         return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", userInfoList));
-    }
-
-    @PostMapping("/proxy/user-token")
-    public ResponseEntity getUserToken(@RequestBody List<Long> userIdList) {
-        List<User> selectedUserList = userRepository.findAllById(userIdList);
-        List<User> sortedUserList = ListUtil.sortByRequestOrder(userIdList, selectedUserList, (user)->user.getId());
-
-        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", sortedUserList));
     }
 
     private Long getUserId(HttpServletRequest request) {

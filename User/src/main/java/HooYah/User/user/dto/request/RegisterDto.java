@@ -25,7 +25,6 @@ public class RegisterDto {
                 .email(email)
                 .password(encodedPassword)
                 .name(name)
-                .token(token)
                 .build();
     }
 }
