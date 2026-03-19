@@ -15,6 +15,8 @@ import HooYah.Yacht.webclient.WebClient.HttpMethod;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
+import org.apache.juli.logging.Log;
+import org.apache.juli.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +40,8 @@ public class PartService {
 
     private final CacheService yachtCacheService;
     private final WebClient webClient;
+
+    Log log = LogFactory.getLog("PartService");
 
     @Value("${web-client.gateway}")
     private String gatewayURL;
@@ -81,6 +85,8 @@ public class PartService {
         partRepository.saveAll(createdPartList); // only one query, not need transaction
 
         requestAddDefaultRepair(createdPartList, dtoList);
+
+        updateCalendarAndAlarmService.updateCalendarAndAlarmList(createdPartList);
 
         return createdPartList;
     }

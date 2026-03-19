@@ -4,6 +4,7 @@ import HooYah.Yacht.SuccessResponse;
 import HooYah.Yacht.dto.request.AutoGenerateRequest;
 import HooYah.Yacht.service.CalendarAlarmAutoGeneratorService;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,13 +22,9 @@ public class AutoGenerateController {
 
     @PostMapping
     public ResponseEntity<SuccessResponse> generateCalendarAndAlarm(
-            @Valid @RequestBody AutoGenerateRequest request
+            @Valid @RequestBody List<AutoGenerateRequest> request
     ) {
-        calendarAlarmAutoGeneratorService.generate(
-                request.getPartId(),
-                request.getYachtId(),
-                request.getNextRepairDate()
-        );
+        calendarAlarmAutoGeneratorService.generateList(request);
 
         return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.CREATED.value(), "success", null));
     }

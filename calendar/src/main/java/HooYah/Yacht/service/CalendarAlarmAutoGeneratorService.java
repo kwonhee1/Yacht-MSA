@@ -1,6 +1,7 @@
 package HooYah.Yacht.service;
 
 import HooYah.Yacht.domain.Alarm;
+import HooYah.Yacht.dto.request.AutoGenerateRequest;
 import HooYah.Yacht.repository.AlarmRepository;
 import HooYah.Yacht.domain.Calendar;
 import HooYah.Yacht.domain.CalendarType;
@@ -17,6 +18,12 @@ public class CalendarAlarmAutoGeneratorService {
 
     private final CalendarRepository calendarRepository;
     private final AlarmRepository alarmRepository;
+
+    @Transactional
+    public void generateList(List<AutoGenerateRequest> requests) {
+        for (AutoGenerateRequest request : requests)
+            generate(request.getPartId(), request.getYachtId(), request.getNextRepairDate());
+    }
 
     @Transactional
     public void generate(Long partId, Long yachtId, OffsetDateTime nextRepairDate) {
