@@ -29,6 +29,9 @@ services:
       - mysql-network
     mem_limit: 300m
     cpus: 0.35
+    environment:
+      - SERVER_TOMCAT_THREADS_MAX=200
+      - SERVER_TOMCAT_THREADS_MIN_SPARE=200
 
   msa-yacht:
     image: amazoncorretto:21-alpine-jdk
@@ -43,6 +46,9 @@ services:
       - mysql-network
     mem_limit: 300m
     cpus: 0.35
+    environment:
+      - SERVER_TOMCAT_THREADS_MAX=200
+      - SERVER_TOMCAT_THREADS_MIN_SPARE=200
 
   msa-part:
     image: amazoncorretto:21-alpine-jdk
@@ -57,6 +63,10 @@ services:
       - mysql-network
     mem_limit: 300m
     cpus: 0.35
+    environment:
+      - web-client_yacht-user=/wiremock/proxy/validate-user?yachtId=%d&userId=%d
+      - SERVER_TOMCAT_THREADS_MAX=200
+      - SERVER_TOMCAT_THREADS_MIN_SPARE=200
 
   msa-calendar:
     image: amazoncorretto:21-alpine-jdk
@@ -71,6 +81,10 @@ services:
       - mysql-network
     mem_limit: 300m
     cpus: 0.35
+    environment:
+      - web-client_yacht-user=/wiremock/yacht/proxy/validate-user?yachtId=%d&userId=%d
+      - SERVER_TOMCAT_THREADS_MAX=200
+      - SERVER_TOMCAT_THREADS_MIN_SPARE=200
 
 networks:
   mysql-network:
