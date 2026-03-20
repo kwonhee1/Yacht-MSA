@@ -36,6 +36,11 @@ public class URIHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
         } catch (TooManyRequest e) {
             logger.error("proxy fail(TooManyRequest) : " + requestUri);
             FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.TOO_MANY_REQUESTS);
+
+            // throws org.apache.http.NoHttpResponseException: yacht.r-e.kr:9090 failed to respond (when testing with apache jmeter)
+            response.headers().set("Content-Type", "text/plain; charset=UTF-8");
+            response.headers().set("Connection", "close");
+
             ctx.writeAndFlush(response);
             ctx.channel().close();
             return;
