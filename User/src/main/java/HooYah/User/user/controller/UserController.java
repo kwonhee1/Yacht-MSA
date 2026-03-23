@@ -11,6 +11,8 @@ import HooYah.Yacht.SuccessResponse;
 import HooYah.Yacht.excetion.CustomException;
 import HooYah.Yacht.excetion.ErrorCode;
 import HooYah.Yacht.util.ListUtil;
+import HooYah.Yacht.event.CreateEvent;
+import HooYah.Yacht.publisher.MessagePublisher;
 import HooYah.Yacht.webclient.WebClient;
 import HooYah.Yacht.webclient.WebClient.HttpMethod;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,6 +39,7 @@ public class UserController {
     private final UserService userService;
     private final UserRepository userRepository;
     private final WebClient webClient;
+    private final MessagePublisher<CreateEvent> userCreateMessagePublisher;
 
     @Value("${web-client.gateway}")
     private String gatewayURL;
@@ -49,11 +52,12 @@ public class UserController {
         User user = userService.registerWithEmail(dto);
 
         if(dto.getToken() != null) {
-            webClient.webClientAsync(
-                    gatewayURL + alarmTokenURI,
-                    HttpMethod.POST,
-                    Map.of("userId", user.getId(), "token", dto.getToken())
-            );
+            userCreateMessagePublisher.publish(new CreateEvent(user.getId(), dto.getToken()));
+//            webClient.webClientAsync(
+//                    gatewayURL + alarmTokenURI,
+//                    HttpMethod.POST,
+//                    Map.of("userId", user.getId(), "token", dto.getToken())
+//            );
         }
 
         return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", null));

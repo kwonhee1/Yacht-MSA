@@ -186,4 +186,8 @@ public class PartService {
         }
     }
 
+    public void deleteYacht(HooYah.Yacht.event.DeletedEvent event) {
+        // todo: deleteYacht implementation
+    }
+
 }

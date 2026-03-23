@@ -53,8 +53,8 @@ dependencies {
 
     // Redis
     implementation files('libs/Redis.jar')
-    implementation files('libs/Common.jar') 
-
+    implementation files('libs/Common.jar')
+    implementation files('libs/Message.jar')
 }
 
 tasks.named('test') {

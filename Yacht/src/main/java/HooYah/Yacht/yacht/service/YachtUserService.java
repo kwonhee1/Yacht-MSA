@@ -84,4 +84,8 @@ public class YachtUserService {
         return yachtUserIdList;
     }
 
+    public void deleteUser(HooYah.Yacht.event.DeletedEvent event) {
+        // todo: deleteUser implementation
+    }
+
 }

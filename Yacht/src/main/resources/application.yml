@@ -38,3 +38,9 @@ web-client:
 
   user-list: /user/proxy/user-list
   part-create: /part/proxy/create
+
+mq:
+  host: ${MQ_HOST}
+  port: ${MQ_PORT}
+  username: ${MQ_USERNAME}
+  password: ${MQ_PASSWORD}

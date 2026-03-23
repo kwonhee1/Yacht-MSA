@@ -57,6 +57,7 @@ dependencies {
     // Redis
     implementation files('libs/Redis.jar')
     implementation files('libs/Common.jar') // need json mapper
+    implementation project(':Message')
 
     // google ai
     // implementation 'org.springframework.ai:spring-ai-starter-model-google-genai:1.1.0'

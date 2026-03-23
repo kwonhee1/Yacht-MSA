@@ -208,5 +208,25 @@ public class CalendarService {
 //        private String content;
 //    }
 
+    public void deleteUser(HooYah.Yacht.event.DeletedEvent event) {
+        // todo: deleteUser implementation
+    }
+
+    public void deleteYacht(HooYah.Yacht.event.DeletedEvent event) {
+        // todo: deleteYacht implementation
+    }
+
+    public void deletePart(HooYah.Yacht.event.DeletedEvent event) {
+        // todo: deletePart implementation
+    }
+
+    public void updatePartInterval(HooYah.Yacht.event.LastRepairChangedEvent event) {
+        // todo: updatePartInterval implementation
+    }
+
+    public void addRepair(HooYah.Yacht.event.LastRepairChangedEvent event) {
+        // todo: addRepair implementation
+    }
+
 }
 

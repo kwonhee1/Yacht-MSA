@@ -54,6 +54,7 @@ dependencies {
     // Redis
     implementation files('libs/Redis.jar')
     implementation files('libs/Common.jar') // need json mapper
+    implementation files('libs/Message.jar')
 }
 
 tasks.named('test') {
