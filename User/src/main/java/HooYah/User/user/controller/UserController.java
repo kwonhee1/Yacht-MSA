@@ -37,30 +37,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class UserController {
 
     private final UserService userService;
-    private final UserRepository userRepository;
-    private final WebClient webClient;
-    private final MessagePublisher<CreateEvent> userCreateMessagePublisher;
-
-    @Value("${web-client.gateway}")
-    private String gatewayURL;
-
-    @Value("${web-client.alarm-token}")
-    private String alarmTokenURI;
 
     @PostMapping("/public/register")
     public ResponseEntity register(@RequestBody @Valid RegisterDto dto) {
         User user = userService.registerWithEmail(dto);
 
-        if(dto.getToken() != null) {
-            userCreateMessagePublisher.publish(new CreateEvent(user.getId(), dto.getToken()));
-//            webClient.webClientAsync(
-//                    gatewayURL + alarmTokenURI,
-//                    HttpMethod.POST,
-//                    Map.of("userId", user.getId(), "token", dto.getToken())
-//            );
-        }
-
-        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", null));
+        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", UserInfoDto.of(user)));
     }
 
     @PostMapping("/public/login")

@@ -4,24 +4,37 @@ import HooYah.Yacht.Domain;
 import HooYah.Yacht.MessageQue;
 import HooYah.Yacht.Topic;
 import HooYah.Yacht.connectionfactory.ConnectionFactory;
+import HooYah.Yacht.event.CalendarCompleteEvent;
+import HooYah.Yacht.event.CreatePartEvent;
 import HooYah.Yacht.event.DeletedEvent;
-import HooYah.Yacht.event.LastRepairChangedEvent;
+import HooYah.Yacht.event.NextRepairDateChangedEvent;
+import HooYah.Yacht.event.YachtCreateEvent;
 import HooYah.Yacht.publisher.MessagePublisher;
 import HooYah.Yacht.service.PartService;
-import HooYah.Yacht.subscriber.Behaviour;
+import HooYah.Yacht.service.RepairService;
+import HooYah.Yacht.subscriber.SubscribeBehaviour;
 import jakarta.annotation.PostConstruct;
 import java.util.Map;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 
 @Configuration
-@RequiredArgsConstructor
 public class MessageQueConfig {
 
-    private final PartService partService;
     private MessageQue messageQue;
+
+    private final PartService partService;
+    private final RepairService repairService;
+
+    public MessageQueConfig(
+            @Lazy PartService partService,
+            @Lazy RepairService repairService
+    ) {
+        this.partService = partService;
+        this.repairService = repairService;
+    }
 
     @Value("${mq.host}")
     private String host;
@@ -36,8 +49,11 @@ public class MessageQueConfig {
     public void init() {
         messageQue = new MessageQue(Domain.PART, ConnectionFactory.redisConnectionFactory(host, port, username, password));
 
-        Map subscribeBehaviour = Behaviour.builder()
-                .add(Topic.YACHT_DELETE, (DeletedEvent event) -> partService.deleteYacht(event))
+        Map subscribeBehaviour = SubscribeBehaviour.builder()
+                .add(Topic.YACHT_DELETE, DeletedEvent.class, (event) -> partService.deleteByYachtId(event.getIdValue(), event.getUserIdValue()))
+                .add(Topic.YACHT_CREATE, YachtCreateEvent.class, (event) -> partService.addPartList(event.getIdValue(), event.getPartList(), event.getUserIdValue()))
+                .add(Topic.PART_CREATE, CreatePartEvent.class, (event)-> repairService.addRepair(event.getIdValue(), "auto-generate", event.getLastRepairDate(), event.getUserIdValue()))
+                .add(Topic.CALENDAR_COMPLETE, CalendarCompleteEvent.class, (event)->repairService.addRepair(event.getPartIdValue(), event.getContent(), event.getCompleteTimeValue(),event.getUserIdValue()))
                 .build();
 
         messageQue.startSubscribe(subscribeBehaviour);
@@ -49,13 +65,13 @@ public class MessageQueConfig {
     }
 
     @Bean
-    public MessagePublisher<LastRepairChangedEvent> partIntervalChangedMessagePublisher() {
-        return messageQue.generatePublisher(Topic.PART_INTERVAL_CHANGED);
+    public MessagePublisher<CreatePartEvent> partCreateMessagePublisher() {
+        return messageQue.generatePublisher(Topic.PART_CREATE);
     }
 
     @Bean
-    public MessagePublisher<LastRepairChangedEvent> repairAddMessagePublisher() {
-        return messageQue.generatePublisher(Topic.REPAIR_ADD);
+    public MessagePublisher<NextRepairDateChangedEvent> nextRepairDateChangedMessagePublisher() {
+        return messageQue.generatePublisher(Topic.LAST_REPAIR_DATE_CHANGED);
     }
 
 }

@@ -9,6 +9,7 @@ import HooYah.Yacht.yacht.repository.YachtRepository;
 import HooYah.Yacht.yacht.repository.YachtUserRepository;
 import HooYah.Yacht.yacht.service.YachtUserService;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,10 +43,10 @@ public class ProxyController {
             @RequestParam("userId") Long userId ,
             @RequestParam("yachtId") Long yachtId
     ) {
-        Yacht yacht = yachtUserRepository.findYacht(yachtId, userId).orElseThrow(
-                ()->new CustomException(ErrorCode.NOT_FOUND)
-        );
-        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", yacht));
+//        Yacht yacht = yachtUserRepository.findYacht(yachtId, userId).orElseThrow(
+//                ()->new CustomException(ErrorCode.NOT_FOUND)
+//        );
+        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", Map.of("id", 1L)));
     }
 
     @PostMapping

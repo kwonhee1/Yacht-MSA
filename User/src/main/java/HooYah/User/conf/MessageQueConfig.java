@@ -1,23 +1,31 @@
 package HooYah.User.conf;
 
+import HooYah.User.user.event.UserCreateEvent;
+import HooYah.User.user.service.UserService;
 import HooYah.Yacht.Domain;
 import HooYah.Yacht.MessageQue;
 import HooYah.Yacht.Topic;
 import HooYah.Yacht.connectionfactory.ConnectionFactory;
-import HooYah.Yacht.event.CreateEvent;
+import HooYah.Yacht.event.BasedEvent;
 import HooYah.Yacht.event.DeletedEvent;
 import HooYah.Yacht.publisher.MessagePublisher;
-import HooYah.Yacht.subscriber.Behaviour;
+import HooYah.Yacht.subscriber.SubscribeBehaviour;
 import jakarta.annotation.PostConstruct;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 
 @Configuration
 public class MessageQueConfig {
 
+    private final UserService userService;
     private MessageQue messageQue;
+
+    public MessageQueConfig(@Lazy UserService userService) {
+        this.userService = userService;
+    }
 
     @Value("${mq.host}")
     private String host;
@@ -32,7 +40,7 @@ public class MessageQueConfig {
     public void init() {
         messageQue = new MessageQue(Domain.USER, ConnectionFactory.redisConnectionFactory(host, port, username, password));
 
-        Map subscribeBehaviour = Behaviour.builder()
+        Map<Topic, SubscribeBehaviour<? extends BasedEvent>> subscribeBehaviour = SubscribeBehaviour.builder()
                 // nothing to subscribe
                 .build();
 
@@ -45,7 +53,7 @@ public class MessageQueConfig {
     }
 
     @Bean
-    public MessagePublisher<CreateEvent> userCreateMessagePublisher() {
+    public MessagePublisher<UserCreateEvent> userCreateMessagePublisher() {
         return messageQue.generatePublisher(Topic.USER_CREATE);
     }
 

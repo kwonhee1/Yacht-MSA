@@ -4,16 +4,19 @@ import HooYah.Redis.CacheService;
 import HooYah.Yacht.domain.Part;
 import HooYah.Yacht.domain.Repair;
 import HooYah.Yacht.dto.part.AddPartDto;
-import HooYah.Yacht.dto.part.UpdatePartDto;
 import HooYah.Yacht.dto.part.PartDto;
+import HooYah.Yacht.dto.part.UpdatePartDto;
+import HooYah.Yacht.event.CreatePartEvent;
+import HooYah.Yacht.event.DeletedEvent;
+import HooYah.Yacht.event.NextRepairDateChangedEvent;
 import HooYah.Yacht.excetion.CustomException;
 import HooYah.Yacht.excetion.ErrorCode;
+import HooYah.Yacht.publisher.MessagePublisher;
 import HooYah.Yacht.repository.PartRepository;
 import HooYah.Yacht.repository.RepairRepository;
 import HooYah.Yacht.webclient.WebClient;
 import HooYah.Yacht.webclient.WebClient.HttpMethod;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
@@ -32,14 +35,15 @@ public class PartService {
 
     private final PartRepository partRepository;
     private final RepairRepository repairRepository;
-    private final UpdateCalendarAndAlarmService updateCalendarAndAlarmService;
-
-    private final RepairService repairService;
 
     private final TransactionTemplate transactionTemplate;
 
     private final CacheService yachtCacheService;
     private final WebClient webClient;
+
+    private final MessagePublisher<DeletedEvent> partDeleteMessagePublisher;
+    private final MessagePublisher<NextRepairDateChangedEvent> partIntervalUpdateMessagePublisher;
+    private final MessagePublisher<CreatePartEvent> partCreateMessagePublisher;
 
     Log log = LogFactory.getLog("PartService");
 
@@ -62,13 +66,14 @@ public class PartService {
                 .build()
         );
 
-        if(dto.getLastRepair() != null)
-            repairService.addRepair(newPart, "Auto Generated", dto.getLastRepair(), userId);
+//        if(dto.getLastRepair() != null)
+//            repairService.addRepair(newPart, "Auto Generated", dto.getLastRepair(), userId);
+        partCreateMessagePublisher.publish(new CreatePartEvent(newPart.getId(), newPart.getYachtId(), dto.getLastRepair(), userId)); // can null lastRepair :: 버려짐
 
         return newPart;
     }
 
-    public List<Part> addPartList(Long yachtId, List<AddPartDto> dtoList) {
+    public List<Part> addPartList(Long yachtId, List<AddPartDto> dtoList, Long userId) {
         List<Part> createdPartList = dtoList
                     .stream()
                     .map((dto) -> Part
@@ -82,30 +87,16 @@ public class PartService {
                     )
                     .toList();
 
-        partRepository.saveAll(createdPartList); // only one query, not need transaction
+        partRepository.saveAll(createdPartList);
 
-        requestAddDefaultRepair(createdPartList, dtoList);
+        for(int i = 0; i < dtoList.size(); i++) {
+            Part part = createdPartList.get(i);
+            OffsetDateTime lastRepairDate = dtoList.get(i).getLastRepair();
 
-        updateCalendarAndAlarmService.updateCalendarAndAlarmList(createdPartList);
-
-        return createdPartList;
-    }
-
-    private void requestAddDefaultRepair(List<Part> createdPartList, List<AddPartDto> dtoList) {
-        // filter dto.getListRepair != null
-        List<Part> repairAddPartList = new ArrayList<>();
-        List<OffsetDateTime> repairAddRepairList = new ArrayList<>();
-
-        for(int i = 0; i < createdPartList.size(); i++) {
-            if(dtoList.get(i).getLastRepair() != null) { // 이거 생각보다 위험하다 :: repair에 필요한 값이 추가 된다면 Part값이 수정되어야함 --> 다른 domain의 값이 dto에 침범함
-                OffsetDateTime repairDate = dtoList.get(i).getLastRepair();
-
-                repairAddRepairList.add(repairDate);
-                repairAddPartList.add(createdPartList.get(i));
-            }
+            partCreateMessagePublisher.publish(new CreatePartEvent(part.getId(), part.getYachtId(), lastRepairDate, userId));
         }
 
-        repairService.addRepairList(repairAddPartList, repairAddRepairList);
+        return createdPartList;
     }
 
     public List<PartDto> getPartListByYacht(Long yachtId, Long userId) {
@@ -129,7 +120,7 @@ public class PartService {
 
     /*
         generate Part Dto List
-            List<PartDot.of(part, LastRepair)>
+            List<PartDto.of(part, LastRepair)>
 
             @Param partList : partList
             @Param mixedLastRepairList : 순서가 보장되지 않는 LastRepairList
@@ -146,7 +137,7 @@ public class PartService {
         return partList.stream().map(part -> PartDto.of(part, lastRepairMap.get(part.getId()))).toList();
     }
 
-    public void updatePart(UpdatePartDto dto, Long userId) {
+    public Part updatePart(UpdatePartDto dto, Long userId) {
         Part part = partRepository.findById(dto.getId()).orElseThrow(
                 () -> new CustomException(ErrorCode.NOT_FOUND)
         );
@@ -156,10 +147,24 @@ public class PartService {
         part.update(dto.getName(), dto.getManufacturer(), dto.getModel());
         boolean isChangedInterval = part.updateInterval(dto.getInterval());
 
-        partRepository.save(part);
+        final Part createdPart = partRepository.save(part);
 
-        if(isChangedInterval)
-            updateCalendarAndAlarmService.updateCalendarAndAlarm(part);
+        if(isChangedInterval) {
+            repairRepository.findByIdOrderByRepairDateDesc(part.getId())
+                .ifPresent((lastRepair)-> {
+                    // if exist last repair
+                    partIntervalUpdateMessagePublisher.publish(
+                        new NextRepairDateChangedEvent(
+                            createdPart.getId(),
+                            userId,
+                            createdPart.getYachtId(),
+                            createdPart.nextRepairDate(lastRepair.getRepairDate())
+                        )
+                    );
+                });
+        }
+
+        return part;
     }
 
     public void deletePart(Long id, Long userId) {
@@ -169,8 +174,9 @@ public class PartService {
 
         validateYachtUser(part.getYachtId(), userId);
 
-        // delete other
-        transactionTemplate.executeWithoutResult((status)->partRepository.delete(part));
+        partRepository.delete(part);
+
+        partDeleteMessagePublisher.publish(new DeletedEvent(userId, id));
     }
 
     private void validateYachtUser(Long yachtId, Long userId) {
@@ -186,8 +192,16 @@ public class PartService {
         }
     }
 
-    public void deleteYacht(HooYah.Yacht.event.DeletedEvent event) {
-        // todo: deleteYacht implementation
+    public void deleteByYachtId(Long yachtId, Long userId) {
+        List<Long> partIdList = transactionTemplate.execute((status)-> {
+            List<Part> partList = partRepository.findPartListByYacht(yachtId);
+            partRepository.deleteAll(partList);
+            return partList.stream().map(Part::getId).toList();
+        });
+
+        partIdList.forEach(partId -> {
+            partDeleteMessagePublisher.publish(new DeletedEvent(partId, userId));
+        });
     }
 
 }
