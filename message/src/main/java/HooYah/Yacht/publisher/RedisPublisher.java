@@ -3,9 +3,11 @@ package HooYah.Yacht.publisher;
 import HooYah.Yacht.Domain;
 import HooYah.Yacht.event.BasedEvent;
 import HooYah.Yacht.Topic;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.lettuce.core.RedisBusyException;
+import java.util.HashMap;
 import java.util.Map;
 import org.springframework.data.redis.RedisSystemException;
 import org.springframework.data.redis.connection.stream.ReadOffset;
@@ -42,8 +44,15 @@ public class RedisPublisher <T extends BasedEvent> implements MessagePublisher<T
 
     @Override
     public void publish(T message) {
-        topic.validateEventType(message);
-        redisTemplate.opsForStream().add(topic.topic(), objectMapper.convertValue(message, new TypeReference<Map<String, String>>() {}));
+        redisTemplate.opsForStream().add(topic.topic(), Map.of("data", mapper(message)));
+    }
+
+    private String mapper(Object object) {
+        try {
+            return objectMapper.writeValueAsString(object);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

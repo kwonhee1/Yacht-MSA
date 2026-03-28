@@ -3,9 +3,10 @@ package HooYah.Yacht;
 import HooYah.Yacht.connectionfactory.ConnectionFactory;
 import HooYah.Yacht.event.BasedEvent;
 import HooYah.Yacht.publisher.MessagePublisher;
-import HooYah.Yacht.subscriber.Behaviour;
+import HooYah.Yacht.subscriber.SubscribeBehaviour;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.util.Map;
 
@@ -29,7 +30,7 @@ public class MessageQue {
     }
 
     public void startSubscribe(
-            Map<Topic, Behaviour<? extends BasedEvent>> subscribeBehaviourMap
+            Map<Topic, SubscribeBehaviour<? extends BasedEvent>> subscribeBehaviourMap
     ) {
         factory.startSubscribe(subscribeBehaviourMap, serverDomain, objectMapper);
     }
@@ -38,6 +39,7 @@ public class MessageQue {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.enable(DeserializationFeature.USE_LONG_FOR_INTS);
         objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
         return objectMapper;
     }
 

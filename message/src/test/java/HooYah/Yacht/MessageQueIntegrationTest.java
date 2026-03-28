@@ -4,9 +4,7 @@ import HooYah.Yacht.connectionfactory.ConnectionFactory;
 import HooYah.Yacht.event.BasedEvent;
 import HooYah.Yacht.event.DeletedEvent;
 import HooYah.Yacht.publisher.MessagePublisher;
-import HooYah.Yacht.publisher.RedisPublisher;
-import HooYah.Yacht.subscriber.Behaviour;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import HooYah.Yacht.subscriber.SubscribeBehaviour;
 import org.junit.jupiter.api.*;
 
 import java.util.HashMap;
@@ -20,8 +18,8 @@ import org.springframework.context.annotation.Configuration;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
 @Configuration
+@SpringBootTest
 @Disabled // redis Server need
 public class MessageQueIntegrationTest {
 
@@ -46,13 +44,11 @@ public class MessageQueIntegrationTest {
     void testRealRedisPublishAndSubscribe() throws InterruptedException {
         // given
         CountDownLatch latch = new CountDownLatch(1);
-        Map<Topic, Behaviour<? extends BasedEvent>> behaviors = new HashMap<>();
-        
-        // Topic.YACHT_DELETE에 대한 구독 행동 정의
-        behaviors.put(Topic.YACHT_DELETE, (DeletedEvent event) -> {
-            System.out.println("Received event: " + event);
-            latch.countDown();
-        });
+
+        Map behaviors = SubscribeBehaviour
+                .builder()
+                .add(Topic.YACHT_DELETE, DeletedEvent.class, (event)->{ System.out.println("sbuscribe!"); latch.countDown();})
+                .build();
 
         // when
         setting.startSubscribe(behaviors);

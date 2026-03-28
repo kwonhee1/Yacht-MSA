@@ -5,7 +5,9 @@ import HooYah.Yacht.Topic;
 import HooYah.Yacht.event.BasedEvent;
 import HooYah.Yacht.publisher.MessagePublisher;
 import HooYah.Yacht.publisher.RedisPublisher;
-import HooYah.Yacht.subscriber.Behaviour;
+import HooYah.Yacht.subscriber.SubscribeBehaviour;
+import HooYah.Yacht.subscriber.SubscribeBehaviour.Behaviour;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Duration;
 import java.util.Map;
@@ -92,7 +94,7 @@ public class RedisConnectionFactory implements ConnectionFactory {
 
     @Override
     public void startSubscribe(
-            Map<Topic, Behaviour<? extends BasedEvent>> subscribeBehaviourMap,
+            Map<Topic, SubscribeBehaviour<? extends BasedEvent>> subscribeBehaviourMap,
             Domain serverDomain,
             ObjectMapper objectMapper // todo : ObjectMapper 책임 분리 필요
     ) {
@@ -154,22 +156,26 @@ public class RedisConnectionFactory implements ConnectionFactory {
     }
 
     @RequiredArgsConstructor
-    private class CustomListener implements StreamListener<String, MapRecord<String, String, String>> {
+    private class CustomListener<E extends BasedEvent> implements StreamListener<String, MapRecord<String, String, String>> {
 
         private final Domain domain;
         private final ObjectMapper objectMapper;
-        private final Behaviour behaviour;
+        private final SubscribeBehaviour<E> subscribeBehaviour;
         private final RedisTemplate<String, String> redisTemplate;
         private final Topic topic;
 
         @Override
         public void onMessage(MapRecord<String, String, String> mapRecord) {
             // MapRecord<Stream Name, Key, Value>
-            Map<String, String> message = mapRecord.getValue();
+            E event;
+            try {
+                Map<String, String> message = mapRecord.getValue();
+                event = objectMapper.readValue(message.get("data"), subscribeBehaviour.getReceiveEventClass());
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
 
-            BasedEvent event = objectMapper.convertValue(message, topic.eventClass());
-
-            behaviour.subscribe(event);
+            subscribeBehaviour.getBehaviour().subscribe(event);
 
             redisTemplate.opsForStream().acknowledge(topic.group(domain), mapRecord);
         }

@@ -8,6 +8,7 @@ module Message.main {
     requires java.logging;
     requires lettuce.core;
     requires com.fasterxml.jackson.datatype.jsr310;
+    requires com.fasterxml.jackson.core;
 
     exports HooYah.Yacht;
     exports HooYah.Yacht.subscriber;
