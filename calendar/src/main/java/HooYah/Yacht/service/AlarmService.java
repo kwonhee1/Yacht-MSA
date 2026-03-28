@@ -3,14 +3,15 @@ package HooYah.Yacht.service;
 import HooYah.Yacht.domain.Alarm;
 import HooYah.Yacht.domain.AlarmToken;
 import HooYah.Yacht.dto.AlarmDto;
+import HooYah.Yacht.event.DeletedEvent;
 import HooYah.Yacht.excetion.CustomException;
 import HooYah.Yacht.excetion.ErrorCode;
+import HooYah.Yacht.publisher.MessagePublisher;
 import HooYah.Yacht.repository.AlarmRepository;
 import HooYah.Yacht.repository.AlarmTokenRepository;
 import HooYah.Yacht.webclient.WebClient;
 import HooYah.Yacht.webclient.WebClient.HttpMethod;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -18,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +32,10 @@ public class AlarmService {
     private final AskService askService;
     private final WebClient webClient;
 
+    private final MessagePublisher<DeletedEvent> alarmDeleteMessagePublisher;
+
+    private final TransactionTemplate transactionTemplate;
+
     @Value("${web-client.gateway}")
     private String gatewayURL;
 
@@ -41,6 +47,9 @@ public class AlarmService {
 
     @Transactional
     public void saveToken(Long userId, String token) {
+        if(token==null||token.isEmpty())
+            return;
+
         alarmTokenRepository.findByUserId(userId)
                 .ifPresentOrElse(
                         alarmToken -> alarmToken.updateToken(token),
@@ -72,11 +81,32 @@ public class AlarmService {
         }
     }
 
+    public void deleteAlarm(Long id, Long userId) {
+        Alarm alarm = alarmRepository.findById(id)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        askService.validateYachtUser(alarm.getYachtId(), userId);
+
+        alarmRepository.delete(alarm);
+
+        // alarmDeleteMessagePublisher.publish(new DeletedEvent(userId, id));
+    }
+
+    @Transactional
+    public void deleteAlarmByYachtId(Long yachtId){
+        alarmRepository.deleteAllByYachtId(yachtId);
+    }
+
+    @Transactional
+    public void deleteUserTokenByUserId(Long userId){
+        alarmTokenRepository.deleteByUserId(userId);
+    }
+
     private List<String> getAllPartName(List<Long> partIdList) {
         // ask part domain
         List<String> allPartNameList = (List<String>) webClient.webClient(
                 gatewayURL + partListNameURI, 
-                HttpMethod.POST, 
+                HttpMethod.POST,
                 partIdList
         ).toList();
         if(allPartNameList == null || allPartNameList.size() != partIdList.size())
@@ -129,3 +159,4 @@ public class AlarmService {
     }
 
 }
+

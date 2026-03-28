@@ -54,7 +54,7 @@ dependencies {
     // Redis
     implementation files('libs/Redis.jar')
     implementation files('libs/Common.jar')
-    implementation files('libs/Message.jar')
+    implementation project(':Message')
 }
 
 tasks.named('test') {

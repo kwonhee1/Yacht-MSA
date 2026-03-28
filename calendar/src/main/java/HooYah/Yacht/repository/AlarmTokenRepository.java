@@ -10,4 +10,6 @@ import org.springframework.stereotype.Repository;
 public interface AlarmTokenRepository extends JpaRepository<AlarmToken, Long> {
     Optional<AlarmToken> findByUserId(Long userId);
     List<AlarmToken> findAllByUserIdIn(List<Long> userIdList);
+
+    void deleteByUserId(Long userId);
 }

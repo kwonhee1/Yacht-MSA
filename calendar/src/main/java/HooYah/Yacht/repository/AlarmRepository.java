@@ -32,4 +32,6 @@ public interface AlarmRepository extends JpaRepository<Alarm, Long> {
             @Param("oneDayStart") OffsetDateTime oneDayStart, @Param("oneDayEnd")   OffsetDateTime oneDayEnd,
             @Param("oneWeekStart") OffsetDateTime oneWeekStart, @Param("oneWeekEnd")   OffsetDateTime oneWeekEnd
     );
+
+    void deleteAllByYachtId(Long yachtId);
 }

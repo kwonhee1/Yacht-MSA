@@ -23,7 +23,7 @@ public class RepairProxyController {
             @RequestBody @Valid RequestRepairDto dto,
             @RequestParam Long userId // used when Repair domain
     ) {
-        repairService.addRepair(dto.getId(), dto.getContent(), dto.getDate(), userId);
+        // repairService.addRepair(dto.getId(), dto.getContent(), dto.getDate(), userId);
         return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", null));
     }
 

@@ -13,5 +13,9 @@ public interface CalendarRepository extends JpaRepository<Calendar, Long> {
 
     @Query("select c from Calendar c left join fetch c.calendarUsers where c.yachtId in :yachtIdList order by c.startDate")
     List<Calendar> findAllByYachtOrderByStartDate(@Param("yachtIdList") List<Long> yachtIdList);
+
+    void deleteAllByYachtId(Long yachtId);
+
+    void deleteAllByPartId(Long partId);
 }
 

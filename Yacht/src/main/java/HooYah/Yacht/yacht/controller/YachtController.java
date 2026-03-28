@@ -6,16 +6,13 @@ import HooYah.Yacht.excetion.ErrorCode;
 import HooYah.Yacht.yacht.domain.Yacht;
 import HooYah.Yacht.yacht.dto.request.CreateYachtDto;
 import HooYah.Yacht.yacht.dto.request.UpdateYachtDto;
+import HooYah.Yacht.yacht.dto.response.ResponseYachtDto;
 import HooYah.Yacht.yacht.service.YachtService;
-import HooYah.Yacht.webclient.WebClient;
-import HooYah.Yacht.webclient.WebClient.HttpMethod;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -32,34 +29,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class YachtController {
 
     private final YachtService yachtService;
-    private final WebClient webClient;
 
     Logger logger = LoggerFactory.getLogger(YachtController.class);
 
-    @Value("${web-client.gateway}")
-    private String gatewayURL;
-
-    @Value("${web-client.part-create}")
-    private String partCreateURI;
-    
     // todo : test!
     @PostMapping
     public ResponseEntity createYacht(@RequestBody @Valid CreateYachtDto dto, HttpServletRequest request) {
         Yacht createdYacht = yachtService.createYacht(dto, getUserId(request));
 
-        // insert default part into createdYacht
-        List<Object> partList = dto.getPartList();
-        if(partList != null && !partList.isEmpty()) {
-            String uri = gatewayURL + partCreateURI + "?yachtId=" + createdYacht.getId();
-            try {
-                webClient.webClient(uri, HttpMethod.POST, partList).toMap(); // Part domain throws CustomException (JACKSON_EXCEPTION,406) --> CustomException(ErrorCode.API_FAIL)
-            } catch (CustomException e) {
-                // fail create Part :: just log
-                logger.error("YachtDomain.YachtController.createYacht :: fail create part" + createdYacht.getId());
-            }
-        }
-
-        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", null));
+        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", ResponseYachtDto.of(createdYacht)));
     }
 
     @PutMapping

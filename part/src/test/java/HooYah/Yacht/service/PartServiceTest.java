@@ -55,7 +55,7 @@ public class PartServiceTest {
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
 
-        partService = new PartService(mockPartRepository, mockRepairRepository, Mockito.mock(UpdateCalendarAndAlarmService.class), mockedRepairService, transactionTemplate, inMemoryCache, mockWebClient);
+        // partService = new PartService(mockPartRepository, mockRepairRepository, Mockito.mock(UpdateCalendarAndAlarmService.class), mockedRepairService, transactionTemplate, inMemoryCache, mockWebClient);
     }
 
     @Test

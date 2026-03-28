@@ -18,7 +18,7 @@ public class JedisPool implements Pool {
         try (Connection connection = getConnection()) {
             // if can not connect by host, port :: throws JedisConnectionException :: extends JedisException
             // if id password not correct :: throws JedisDataException :: extends JedisException
-        } catch (JedisException e) {
+        } catch (ConnectFailException e) {
             pool.close();
             throw new ConnectFailException(e);
         }
@@ -26,7 +26,16 @@ public class JedisPool implements Pool {
 
     @Override
     public Connection getConnection() {
-        return new JedisConnection(pool.getResource());
+        try {
+            return new JedisConnection(pool.getResource());
+        } catch (JedisException e) {
+            // retry once
+            try {
+                return new JedisConnection(pool.getResource());
+            } catch (JedisException retryException) {
+                throw new ConnectFailException(retryException);
+            }
+        }
     }
 
     @Override

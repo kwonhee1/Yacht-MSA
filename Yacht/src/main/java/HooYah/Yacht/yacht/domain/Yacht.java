@@ -1,5 +1,6 @@
 package HooYah.Yacht.yacht.domain;
 
+import HooYah.Yacht.domain.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -18,13 +19,18 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
+
 @Entity
 @Table(name = "yacht")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Builder
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-public class Yacht {
+@SQLDelete(sql = "UPDATE yacht SET is_deleted = true WHERE id = ?")
+@Where(clause = "is_deleted = false")
+public class Yacht extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

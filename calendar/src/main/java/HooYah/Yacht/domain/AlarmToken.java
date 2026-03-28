@@ -11,11 +11,16 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
+
 @Entity
 @Table(name = "alarm_token")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class AlarmToken {
+@SQLDelete(sql = "UPDATE alarm_token SET is_deleted = true WHERE id = ?")
+@Where(clause = "is_deleted = false")
+public class AlarmToken extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
