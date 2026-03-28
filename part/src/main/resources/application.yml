@@ -48,3 +48,9 @@ web-client:
   user-list: /user/proxy/user-list
   yacht-user: /yacht/proxy/validate-user?yachtId=%d&userId=%d
   calendar-alarm-auto-generate: /calendar/proxy
+
+mq:
+  host: ${MQ_HOST}
+  port: ${MQ_PORT}
+  username: ${MQ_USERNAME}
+  password: ${MQ_PASSWORD}

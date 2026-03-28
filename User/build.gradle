@@ -60,6 +60,7 @@ dependencies {
     implementation("org.mindrot:jbcrypt:0.4")
 
     implementation files('libs/Common.jar')
+    implementation project(':Message')
 
 }
 

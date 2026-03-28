@@ -17,7 +17,8 @@ public class CreateYachtDto {
     @Valid
     private YachtInfo yacht;
 
-    private List partList;
+    @Valid
+    private List<PartRequest> partList;
 
     @Getter
     @Setter

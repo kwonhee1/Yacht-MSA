@@ -86,6 +86,30 @@ services:
       - SERVER_TOMCAT_THREADS_MAX=200
       - SERVER_TOMCAT_THREADS_MIN_SPARE=200
 
+  msa-redis:
+    image: redis:7.2
+    container_name: msa-redis
+    ports:
+      - "6379:6379"
+    command: >
+      redis-server
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+    mem_limit: 300m
+    cpus: 0.35
+
+  msa-mq:
+    image: redis:7.2
+    container_name: msa-mq
+    ports:
+      - "6380:6379"
+    command: >
+      redis-server
+      --maxmemory 128mb
+      --maxmemory-policy noeviction
+    mem_limit: 256m
+    cpus: 0.35
+    
 networks:
   mysql-network:
     external: true

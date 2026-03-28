@@ -1,1 +1,3 @@
 rootProject.name = 'Yacht'
+include 'Message'
+project(':Message').projectDir = file('../Message')

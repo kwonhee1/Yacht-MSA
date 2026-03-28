@@ -15,6 +15,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
+
 import java.time.OffsetDateTime;
 
 @Entity
@@ -23,7 +26,9 @@ import java.time.OffsetDateTime;
 @Getter
 @Builder
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-public class Repair {
+@SQLDelete(sql = "UPDATE repair SET is_deleted = true WHERE id = ?")
+@Where(clause = "is_deleted = false")
+public class Repair extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -57,6 +62,13 @@ public class Repair {
 
     public Long getPartId() {
         return part.getId();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o.getClass() != Repair.class)
+            return false;
+        return ((Repair)o).id.equals(this.id);
     }
 
 }

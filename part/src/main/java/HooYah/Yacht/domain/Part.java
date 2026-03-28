@@ -14,6 +14,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
+
 import java.time.OffsetDateTime;
 import java.util.List;
 
@@ -23,7 +26,9 @@ import java.util.List;
 @Getter
 @Builder
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-public class Part {
+@SQLDelete(sql = "UPDATE part SET is_deleted = true WHERE id = ?")
+@Where(clause = "is_deleted = false")
+public class Part extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

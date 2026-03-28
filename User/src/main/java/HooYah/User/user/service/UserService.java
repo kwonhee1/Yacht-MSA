@@ -4,9 +4,12 @@ import HooYah.User.passwordencoder.PasswordEncoder;
 import HooYah.User.user.domain.User;
 import HooYah.User.user.dto.request.LoginDto;
 import HooYah.User.user.dto.request.RegisterDto;
+import HooYah.User.user.event.UserCreateEvent;
 import HooYah.User.user.repository.UserRepository;
+import HooYah.Yacht.event.DeletedEvent;
 import HooYah.Yacht.excetion.CustomException;
 import HooYah.Yacht.excetion.ErrorCode;
+import HooYah.Yacht.publisher.MessagePublisher;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +26,9 @@ public class UserService {
 
     private final TransactionTemplate transactionTemplate;
 
+    private final MessagePublisher<UserCreateEvent> userCreateMessagePublisher;
+    private final MessagePublisher<DeletedEvent> userDeleteMessagePublisher;
+
     public User registerWithEmail(RegisterDto dto) {
         String encodedPassword = passwordEncoder.encode(dto.getPassword());
 
@@ -33,6 +39,8 @@ public class UserService {
             User user = dto.toEntity(encodedPassword);
             return userRepository.save(user);
         });
+
+        userCreateMessagePublisher.publish(new UserCreateEvent(createdUser.getId(), dto.getToken()));
 
         return createdUser;
     }
@@ -54,9 +62,15 @@ public class UserService {
         return userRepository.findById(userId).orElseThrow(()->new CustomException(ErrorCode.NOT_FOUND));
     }
 
-    @Transactional
     public void deleteUser(Long userId) {
-        // todo : delete 구현
+        transactionTemplate.executeWithoutResult(status -> {
+            userRepository.findById(userId).ifPresentOrElse(
+                    (u)->userRepository.delete(u),
+                    ()-> { throw new CustomException(ErrorCode.NOT_FOUND); }
+            );
+        });
+
+        userDeleteMessagePublisher.publish(new DeletedEvent(userId, userId));
     }
 
     public List<User> getUserList(List<Long> userIdList) {

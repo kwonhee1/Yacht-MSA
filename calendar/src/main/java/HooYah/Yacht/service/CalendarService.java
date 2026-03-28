@@ -6,21 +6,23 @@ import HooYah.Yacht.domain.CalendarUser;
 import HooYah.Yacht.dto.request.CalendarCreateRequest;
 import HooYah.Yacht.dto.request.CalendarUpdateRequest;
 import HooYah.Yacht.dto.response.CalendarInfo;
-import HooYah.Yacht.repository.CalendarRepository;
+import HooYah.Yacht.event.CalendarCompleteEvent;
+import HooYah.Yacht.event.CreateEvent;
+import HooYah.Yacht.event.DeletedEvent;
 import HooYah.Yacht.excetion.CustomException;
 import HooYah.Yacht.excetion.ErrorCode;
-import HooYah.Yacht.webclient.WebClient;
-import HooYah.Yacht.webclient.WebClient.HttpMethod;
-import java.time.OffsetDateTime;
+import HooYah.Yacht.publisher.MessagePublisher;
+import HooYah.Yacht.repository.CalendarRepository;
+import HooYah.Yacht.repository.CalendarUserRepository;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Service
 @RequiredArgsConstructor
@@ -29,12 +31,13 @@ public class CalendarService {
     private final CalendarRepository calendarRepository;
 
     private final AskService askService;
-    private final WebClient webClient;
 
-    @Value("${web-client.gateway}")
-    private String gatewayURL;
-    @Value("${web-client.repair-create}")
-    private String createRepairURI;
+    private final MessagePublisher<CreateEvent> calendarCreateMessagePublisher;
+    private final MessagePublisher<CalendarCompleteEvent> calendarCompleteMessagePublisher;
+    private final MessagePublisher<DeletedEvent> calendarDeleteMessagePublisher;
+
+    private final TransactionTemplate transactionTemplate;
+    private final CalendarUserRepository calendarUserRepository;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -61,8 +64,13 @@ public class CalendarService {
         }
         Calendar newCalendar = createCalendarDomain(dto);
 
-        if(newCalendar.isCompletedNow())
-            createNewRepair(newCalendar, userId);
+        // Publish Events
+        // calendarCreateMessagePublisher.publish(new CreateEvent(newCalendar.getId(), userId));
+
+        if(newCalendar.isCompletedNow()) {
+            calendarCompleteMessagePublisher.publish(new CalendarCompleteEvent(newCalendar.getId(), userId, newCalendar.getPartId(), newCalendar.getEndDate(), newCalendar.getContent()));
+            // createNewRepair(newCalendar, userId);
+        }
 
         return CalendarInfo.of(newCalendar, partInfo, yachtInfo, referenceUserInfoList);
     }
@@ -90,14 +98,18 @@ public class CalendarService {
 
     public Calendar updateCalendar(Long id, CalendarUpdateRequest dto, Long userId) {
         Calendar calendar = calendarRepository.findById(id)
-                .orElseThrow(()->new CustomException(ErrorCode.NOT_FOUND));
+                .orElseThrow(()-> new CustomException(ErrorCode.NOT_FOUND));
 
         askService.validateYachtUser(calendar.getYachtId(), userId);
 
         calendar = updateCalendarDomain(calendar, dto);
 
-        if(calendar.isCompletedNow())
-            createNewRepair(calendar, userId);
+        // Publish CompleteEvent only if completedNow
+        if(calendar.isCompletedNow()) {
+            calendarCompleteMessagePublisher.publish(new CalendarCompleteEvent(calendar.getId(), userId, calendar.getPartId(), calendar.getEndDate(), calendar.getContent()));
+            // createNewRepair(calendar, userId);
+        }
+
         return calendar;
     }
 
@@ -116,6 +128,7 @@ public class CalendarService {
         }
         calendarRepository.save(calendar);
         return calendar;
+
     }
 
     public CalendarInfo getCalendar(Long id, Long userId) {
@@ -172,41 +185,37 @@ public class CalendarService {
         return CalendarInfo.of(calendars, partInfoList, sortedYachtInfoList, userInfoList);
     }
 
-    @Transactional
     public void deleteCalendar(Long id, Long userId) {
         Calendar calendar = calendarRepository.findById(id)
                 .orElseThrow(()->new CustomException(ErrorCode.NOT_FOUND));
         askService.validateYachtUser(calendar.getYachtId(), userId);
-        
+
         calendarRepository.delete(calendar);
-        // repair은 지우지 않음
+
+        // Publish DeletedEvent (Constructor order: id, userId)
+        // calendarDeleteMessagePublisher.publish(new DeletedEvent(id, userId));
     }
 
-    public void createNewRepair(Calendar calendar, Long userId) {
-        if(!calendar.isCompletedNow())
-            return;
-
-        if(calendar.getType().equals(CalendarType.PART)) {
-            // repair domain에게 무한 web client 시도하기
-            String uri = String.format(gatewayURL + createRepairURI + "?userId=%d", userId);
-            try {
-                webClient.webClient(uri, HttpMethod.POST,
-                        Map.of("id", calendar.getPartId(), "date", OffsetDateTime.now(), "content", "autoGenerated")).toMap();
-            } catch (CustomException e) {
-                // api throw CustomException
-                logger.error(e.getMessage());
-            } catch (RuntimeException e) {
-                // api fail
-                logger.error(e.getMessage());
-            }
-        }
+    // event listener
+    @Transactional
+    public void deleteCalendarUserByUserId(Long userId) {
+        calendarUserRepository.deleteAllByUserId(userId);
     }
 
-//    class RequestRepairDto {
-//        private Long id; // partId
-//        private OffsetDateTime date;
-//        private String content;
-//    }
+    @Transactional
+    public void deleteByYachtId(Long yachtId) {
+        calendarRepository.deleteAllByYachtId(yachtId);
+
+        // publisher.publish()
+    }
+
+    @Transactional
+    public void deleteByPartId(Long partId) {
+        calendarRepository.deleteAllByPartId(partId);
+
+        // publisher.publish()
+    }
 
 }
+
 

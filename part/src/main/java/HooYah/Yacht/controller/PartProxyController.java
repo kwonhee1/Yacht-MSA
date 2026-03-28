@@ -76,7 +76,7 @@ public class PartProxyController {
             return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.CONFLICT.value(), "fail", null));
         }
 
-        partService.addPartList(yachtId, dtoList);
+        // partService.addPartList(yachtId, dtoList, userId);
 
         return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", null));
     }

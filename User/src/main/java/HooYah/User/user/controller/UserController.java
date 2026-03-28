@@ -11,6 +11,8 @@ import HooYah.Yacht.SuccessResponse;
 import HooYah.Yacht.excetion.CustomException;
 import HooYah.Yacht.excetion.ErrorCode;
 import HooYah.Yacht.util.ListUtil;
+import HooYah.Yacht.event.CreateEvent;
+import HooYah.Yacht.publisher.MessagePublisher;
 import HooYah.Yacht.webclient.WebClient;
 import HooYah.Yacht.webclient.WebClient.HttpMethod;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,28 +37,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class UserController {
 
     private final UserService userService;
-    private final UserRepository userRepository;
-    private final WebClient webClient;
-
-    @Value("${web-client.gateway}")
-    private String gatewayURL;
-
-    @Value("${web-client.alarm-token}")
-    private String alarmTokenURI;
 
     @PostMapping("/public/register")
     public ResponseEntity register(@RequestBody @Valid RegisterDto dto) {
         User user = userService.registerWithEmail(dto);
 
-        if(dto.getToken() != null) {
-            webClient.webClientAsync(
-                    gatewayURL + alarmTokenURI,
-                    HttpMethod.POST,
-                    Map.of("userId", user.getId(), "token", dto.getToken())
-            );
-        }
-
-        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", null));
+        return ResponseEntity.ok().body(new SuccessResponse(HttpStatus.OK.value(), "success", UserInfoDto.of(user)));
     }
 
     @PostMapping("/public/login")

@@ -62,3 +62,9 @@ web-client:
   part-list-name: /part/proxy/name
 
   repair-create: /repair/proxy
+
+mq:
+  host: ${MQ_HOST}
+  port: ${MQ_PORT}
+  username: ${MQ_USERNAME}
+  password: ${MQ_PASSWORD}

@@ -35,3 +35,9 @@ token:
 web-client:
   gateway: ${GATEWAY_URL}
   alarm-token: /alarm/proxy/token
+
+mq:
+  host: ${MQ_HOST}
+  port: ${MQ_PORT}
+  username: ${MQ_USERNAME}
+  password: ${MQ_PASSWORD}
