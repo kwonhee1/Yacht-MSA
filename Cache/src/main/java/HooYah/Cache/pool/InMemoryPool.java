@@ -31,6 +31,11 @@ public class InMemoryPool implements Pool {
     }
 
     @Override
+    public Pool copyNew() {
+        return this;
+    }
+
+    @Override
     public void close() {
         isClosed = true;
         closePublishedConnections();

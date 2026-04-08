@@ -6,7 +6,9 @@ public interface Pool {
 
     Connection getConnection();
 
-    public void returnResource(Connection connection);
+    void returnResource(Connection connection);
+
+    Pool copyNew();
 
     void close();
 

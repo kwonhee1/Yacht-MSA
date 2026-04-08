@@ -7,9 +7,20 @@ import redis.clients.jedis.exceptions.JedisException;
 
 public class JedisPool implements Pool {
 
+    private final String host;
+    private final int port;
+    private final String username;
+    private final String password;
+    private final int maxConnection;
     private redis.clients.jedis.JedisPool pool;
 
     public JedisPool(String host, int port, String username, String password, int maxConnection) {
+        this.host = host;
+        this.port = port;
+        this.username = username;
+        this.password = password;
+        this.maxConnection = maxConnection;
+
         JedisPoolConfig config = new JedisPoolConfig();
         config.setMaxTotal(maxConnection);
 
@@ -20,7 +31,7 @@ public class JedisPool implements Pool {
             // if id password not correct :: throws JedisDataException :: extends JedisException
         } catch (ConnectFailException e) {
             pool.close();
-            throw new ConnectFailException(e);
+            throw e;
         }
     }
 
@@ -45,8 +56,14 @@ public class JedisPool implements Pool {
     }
 
     @Override
+    public Pool copyNew() {
+        return new JedisPool(host, port, username, password, maxConnection);
+    }
+
+    @Override
     public void close() {
         pool.close();
     }
 
 }
+
