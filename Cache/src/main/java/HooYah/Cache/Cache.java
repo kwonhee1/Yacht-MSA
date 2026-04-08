@@ -4,6 +4,7 @@ import HooYah.Cache.pool.InMemoryPool;
 import HooYah.Cache.pool.JedisPool;
 import HooYah.Cache.pool.Pool;
 import HooYah.Cache.template.CacheTemplate;
+import HooYah.Cache.template.InMemoryCacheTemplate;
 import HooYah.Cache.template.Template;
 import java.util.Map;
 
@@ -21,6 +22,9 @@ public class Cache {
     }
 
     public static <T> Template cacheTemplate(Pool pool) {
+        if(pool instanceof InMemoryPool)
+            return new InMemoryCacheTemplate((InMemoryPool) pool);
+
         return new CacheTemplate(pool);
     }
 

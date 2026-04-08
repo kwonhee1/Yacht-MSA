@@ -13,6 +13,8 @@ public interface Template {
 
     List<String> getList(List<String> keyList, SaveSecond second);
 
+    void reconnect();
+
     void close();
 
 }

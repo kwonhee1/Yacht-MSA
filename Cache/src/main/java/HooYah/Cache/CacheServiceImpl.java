@@ -1,9 +1,6 @@
 package HooYah.Cache;
 
 import HooYah.Cache.connection.SaveSecond;
-import HooYah.Cache.pool.JedisPool;
-import HooYah.Cache.pool.Pool;
-import HooYah.Cache.template.CacheTemplate;
 import HooYah.Cache.template.Template;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -100,6 +97,11 @@ public class CacheServiceImpl<T> implements CacheService<T> {
                 .map((id)-> toKey(category, id))
                 .toList();
         return getListOrSelectPrivate(keyList, select);
+    }
+
+    @Override
+    public void reconnect() {
+        cacheTemplate.reconnect();
     }
 
     // todo : method name

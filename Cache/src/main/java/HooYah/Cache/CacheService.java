@@ -14,6 +14,8 @@ public interface CacheService<T> {
 
     List<T> getListOrSelect(Long subjectId, List<Long> selectIdList, Select<List<T>> select);
 
+    void reconnect();
+
     @FunctionalInterface
     interface Select <S> {
         S select();
