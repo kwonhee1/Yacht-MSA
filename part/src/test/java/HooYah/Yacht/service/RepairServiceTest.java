@@ -43,7 +43,7 @@ public class RepairServiceTest {
         Mockito.lenient().when(transactionTemplate.execute(Mockito.any()))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        repairService = new RepairService(mockRepairRepository, mockPartRepository, Mockito.mock(UpdateCalendarAndAlarmService.class), inMemoryCache, mockWebClient, transactionTemplate);
+        // repairService = new RepairService(mockRepairRepository, mockPartRepository, Mockito.mock(UpdateCalendarAndAlarmService.class), inMemoryCache, mockWebClient, transactionTemplate);
     }
 
     // test :
