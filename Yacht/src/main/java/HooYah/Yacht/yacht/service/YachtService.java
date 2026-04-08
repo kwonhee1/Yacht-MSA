@@ -31,6 +31,7 @@ public class YachtService {
     private final MessagePublisher<YachtCreateEvent> yachtCreateMessagePublisher;
     private final MessagePublisher<DeletedEvent> yachtDeleteMessagePublisher;
 
+    @Transactional
     public Yacht createYacht (CreateYachtDto dto, Long userId) {
         Yacht createdYacht = transactionTemplate.execute(status-> {
             return createYachtDomain(dto.getYacht(), userId);

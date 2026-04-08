@@ -3,7 +3,6 @@ module Yacht.main {
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.datatype.jsr310;
     requires java.net.http;
-    requires jakarta.persistence;
 
     exports HooYah.Yacht;
     exports HooYah.Yacht.webclient;

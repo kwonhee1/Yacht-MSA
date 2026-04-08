@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Disabled
 class BitManagerTest {
     private BitManager manager;
     private final int INITIAL_SIZE = 1000;
