@@ -40,7 +40,12 @@ public class JedisPool implements Pool {
         try {
             return new JedisConnection(pool.getResource());
         } catch (JedisException e) {
-            throw new ConnectFailException(e);
+            // retry once
+            try {
+                return new JedisConnection(pool.getResource());
+            } catch (JedisException retryException) {
+                throw new ConnectFailException(retryException);
+            }
         }
     }
 
