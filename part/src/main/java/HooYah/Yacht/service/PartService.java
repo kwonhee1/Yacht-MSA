@@ -1,6 +1,6 @@
 package HooYah.Yacht.service;
 
-import HooYah.Redis.CacheService;
+import HooYah.Cache.CacheService;
 import HooYah.Yacht.domain.Part;
 import HooYah.Yacht.domain.Repair;
 import HooYah.Yacht.dto.part.AddPartDto;

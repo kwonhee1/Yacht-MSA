@@ -1,8 +1,8 @@
 package HooYah.Yacht.conf;
 
-import HooYah.Redis.Cache;
-import HooYah.Redis.CacheService;
-import HooYah.Redis.pool.Pool;
+import HooYah.Cache.Cache;
+import HooYah.Cache.CacheService;
+import HooYah.Cache.pool.Pool;
 import jakarta.annotation.PostConstruct;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;

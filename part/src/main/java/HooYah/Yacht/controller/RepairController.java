@@ -1,6 +1,6 @@
 package HooYah.Yacht.controller;
 
-import HooYah.Redis.CacheService;
+import HooYah.Cache.CacheService;
 import HooYah.Yacht.SuccessResponse;
 import HooYah.Yacht.domain.Repair;
 import HooYah.Yacht.dto.repair.RepairDto;
@@ -52,7 +52,7 @@ public class RepairController {
         List<Long> repairUserIdList = repairList.stream().map(Repair::getUserId).toList();
         List<?> repairUserInfoList = userCacheService.getListOrSelect(
                 repairUserIdList,
-                ()-> (List) webClient.webClient(gatewayURL + userListURI, HttpMethod.POST, repairUserIdList).toList() // 순서 보장함
+                ()-> (List) webClient.webClient(gatewayURL + userListURI, HttpMethod.POST, repairUserIdList).toList()
         );
 
         List<RepairDto> response = new ArrayList<>();

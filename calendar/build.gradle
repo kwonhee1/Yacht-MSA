@@ -55,7 +55,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-admin:9.2.0'
 
     // Redis
-    implementation files('libs/Redis.jar')
+    implementation files('libs/Cache.jar')
     implementation files('libs/Common.jar') // need json mapper
     implementation project(':Message')
 

@@ -1,6 +1,6 @@
 package HooYah.Yacht.service;
 
-import HooYah.Redis.CacheService;
+import HooYah.Cache.CacheService;
 import HooYah.Yacht.excetion.CustomException;
 import HooYah.Yacht.excetion.ErrorCode;
 import HooYah.Yacht.webclient.WebClient;
@@ -100,7 +100,7 @@ public class AskService {
     private String yachtIdListURI;
 
     public List<Long> yachtListInMemory(Long userId) {
-        // get yacht list (관리하는 모든 yacht List 조회)
+        // get yacht list (관리하??모든 yacht List 조회)
         String uri = String.format(gatewayURL + yachtIdListURI, userId);
         return inMemoryUserCacheService.getOrSelect(
                 userId,

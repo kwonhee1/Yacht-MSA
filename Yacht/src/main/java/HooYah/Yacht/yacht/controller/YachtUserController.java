@@ -1,6 +1,6 @@
 package HooYah.Yacht.yacht.controller;
 
-import HooYah.Redis.CacheService;
+import HooYah.Cache.CacheService;
 import HooYah.Yacht.SuccessResponse;
 import HooYah.Yacht.excetion.CustomException;
 import HooYah.Yacht.excetion.ErrorCode;
@@ -51,7 +51,7 @@ public class YachtUserController {
             HttpServletRequest request ,
             @PathVariable("yachtId") Long yachtId
     ) {
-        List<Long> yachtUserIdList = yachtUserService.yachtUserIdList(yachtId, getUserId(request)); // yacht user 들의 id list
+        List<Long> yachtUserIdList = yachtUserService.yachtUserIdList(yachtId, getUserId(request));
 
         List<?> userList = userCacheService.getListOrSelect(
                 yachtUserIdList,

@@ -2,8 +2,8 @@ package HooYah.Yacht.service;
 
 import static HooYah.Yacht.TestUtil.*;
 
-import HooYah.Redis.Cache;
-import HooYah.Redis.CacheService;
+import HooYah.Cache.Cache;
+import HooYah.Cache.CacheService;
 import HooYah.Yacht.domain.Part;
 import HooYah.Yacht.domain.Repair;
 import HooYah.Yacht.dto.part.PartDto;
@@ -128,11 +128,4 @@ public class PartServiceTest {
                         .webClient(Mockito.anyString(), Mockito.eq(HttpMethod.POST), Mockito.isNotNull()).toMap()
         );
     }
-
-    // test : send message que (일단 skip)
-    @Test
-    public void deletePartTest() {
-
-    }
-
 }

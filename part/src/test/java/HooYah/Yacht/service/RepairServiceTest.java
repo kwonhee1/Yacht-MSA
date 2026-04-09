@@ -2,8 +2,8 @@ package HooYah.Yacht.service;
 
 import static HooYah.Yacht.TestUtil.*;
 
-import HooYah.Redis.Cache;
-import HooYah.Redis.CacheService;
+import HooYah.Cache.Cache;
+import HooYah.Cache.CacheService;
 import HooYah.Yacht.domain.Part;
 import HooYah.Yacht.domain.Repair;
 import HooYah.Yacht.repository.PartRepository;
@@ -64,7 +64,7 @@ public class RepairServiceTest {
         Mockito.when(mockPartRepository.findById(Mockito.anyLong()))
                 .thenReturn(Optional.of(part));
         Mockito.when(mockRepairRepository.findByIdOrderByRepairDateDesc(Mockito.anyLong()))
-                .thenReturn(Optional.of(generateRepair(0L, part, userId))); // 아무 repair를 반환
+                .thenReturn(Optional.of(generateRepair(0L, part, userId))); // 아무 repair 반환
         // web client : validateYachtUser(get), updateCalendarAndAlarm(post)
         Mockito.when(mockWebClient.webClient(Mockito.anyString(), Mockito.eq(HttpMethod.GET), Mockito.isNull()).toMap())
                 .thenReturn(Map.of("yacht", "yacht"));

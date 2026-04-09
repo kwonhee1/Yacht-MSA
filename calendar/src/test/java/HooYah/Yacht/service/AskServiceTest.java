@@ -1,7 +1,7 @@
 package HooYah.Yacht.service;
 
-import HooYah.Redis.Cache;
-import HooYah.Redis.CacheService;
+import HooYah.Cache.Cache;
+import HooYah.Cache.CacheService;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;

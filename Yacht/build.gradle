@@ -52,7 +52,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
     // Redis
-    implementation files('libs/Redis.jar')
+    implementation files('libs/Cache.jar')
     implementation files('libs/Common.jar')
     implementation project(':Message')
 }

@@ -34,6 +34,7 @@ public class JedisConnection implements Connection {
 
     @Override
     public List<String> sync() {
+        pipeline.sync();
         return resultList.stream().map(Response::get).toList();
     }
 
