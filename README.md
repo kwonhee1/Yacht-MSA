@@ -46,12 +46,10 @@ flowchart LR
     Nginx --> Auth
 
     subgraph Gateway["Gateway"]
-        Auth["인증<br/>JWT 검증 · UserId 헤더 추가"] --> LB["Load Balancer<br/>URI별 Service 선택<br/>상태가 좋은 Pod 선택"]
-        LB --> Ticket{"Ticket<br/>Service별 동시 Request 수 확인"}
+        Auth["인증<br/>JWT 검증 · UserId 헤더 추가"] --> Proxy["Proxy"]
     end
 
-    Ticket -->|"초과 : 대기 Ticket 반환"| Client
-    Ticket -->|"입장 Ticket : Proxy"| Domain
+    Proxy -->|Proxy| Domain
 
     subgraph Domain["Domain MicroService"]
         User["User"]
@@ -70,11 +68,12 @@ flowchart LR
 | 구분 | 사용 기술 |
 |---|---|
 | Language | Java 21 |
-| Framework | Spring Boot · Spring Data JPA |
-| Gateway | Netty · JJWT |
-| Database | MySQL |
-| Cache · MQ | Redis 7 (Jedis · Redis Stream) |
-| Infra | Docker · Docker Compose · Nginx · Raspberry Pi 4 |
+| Framework | Spring Boot · JPA |
+| Gateway | Netty |
+| Database | MySQL 8.0 |
+| Cache | Redis · [Jedis](https://github.com/redis/jedis) · [commons-pool2](https://commons.apache.org/proper/commons-pool/) |
+| MQ | Redis 7 (Redis Stream) |
+| Infra | Docker · Nginx · Raspberry Pi 4 |
 | Test | JUnit · K6 |
 
 ## 4. 성능 Test
