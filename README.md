@@ -15,11 +15,13 @@
 |---|---|---|---|
 | Gateway | Proxy · 인증 · Load Balance · Health Check · 요청 수 제한 | 9090 | [README](./Gateway/README.md) |
 
-### MQ
+### 공통
 
-| 모듈 | 역할 | Port |
+| 모듈 | 역할 | 문서 |
 |---|---|---|
-| msa-mq | Redis Stream 기반 도메인 간 이벤트 전달 | 6380 |
+| Cache | Redis Cache 라이브러리. Redis 연결 실패 시 InMemory Cache로 자동 전환 | [README](./Cache/README.md) |
+| message | Redis Stream 기반 Message Queue Template (Publish / Subscribe) | [README](./message/README.md) |
+| common | 공통 WebClient · SuccessResponse · ErrorCode · ListUtil | [README](./common/README.md) |
 
 ### Domain MicroService
 
@@ -29,14 +31,6 @@
 | Yacht | 요트 · 요트 멤버 · 초대 코드 | `/yacht/` | 9092 | [README](./Yacht/README.md) |
 | Part | 부품 · 수리 내역 | `/part/` `/repair/` | 9093 | [README](./part/README.md) |
 | Calendar | 정비 일정 · 푸시 알림 | `/calendar/` `/alarm/` | 9094 | [README](./calendar/README.md) |
-
-### 공통
-
-| 모듈 | 역할 | 문서 |
-|---|---|---|
-| Cache | Redis Cache 라이브러리. Redis 연결 실패 시 InMemory Cache로 자동 전환 | [README](./Cache/README.md) |
-| message | Redis Stream 기반 Message Queue Template (Publish / Subscribe) | [README](./message/README.md) |
-| common | 공통 WebClient · SuccessResponse · ErrorCode · ListUtil | [README](./common/README.md) |
 
 ## 2. 요청 흐름
 
