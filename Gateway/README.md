@@ -1,187 +1,158 @@
 # Gateway
 
-# 목차
+## 목차
 1. 주요 기능 / 전체 흐름도
 2. ping test 결과
 3. 기능 별 상세 내용
 
+<br/>
+
 ## 1. 주요 기능 / 전체 흐름도
-1. proxy
-2. ticket service
-3. load balancer
-4. auto scale out
+
+Gateway는 모든 요청을 받아 인증을 처리하고, 요청 URI에 맞는 도메인 서버(Pod)를 골라 프록시하는 서버입니다.
+
+1. **Proxy** — 모든 요청을 알맞은 도메인 서버로 전달
+2. **Auth** — 요청 단계에서 인증 처리
+3. **Load Balancer** — URI와 서버 상태를 고려해 전달할 Pod 선정
+4. **Limiter** — Pod별 동시 처리 요청 수를 제한해 과부하 방지
 
 ```mermaid
 sequenceDiagram
-participant Client 
-participant Gateway 
+participant Client
+participant Gateway
 participant LoadBalancer
-participant Ticket
-participant DomainServer 
+participant Limiter
+participant DomainServer
 
-Client ->> Gateway: http request 
-Gateway ->> Gateway : check auth
+Client ->> Gateway: HTTP Request
+Gateway ->> Gateway: check auth
 
 rect rgb(240, 248, 255)
-Note over LoadBalancer : uri 별 알맞은 DomainServer(Pod)를 선택
-Gateway ->> LoadBalancer : request Load Balance
-LoadBalancer ->> Gateway : response Domain Server(Pod)
+Note over LoadBalancer : URI별 상태가 가장 좋은 Pod 선택
+Gateway ->> LoadBalancer: loadBalance(uri)
+LoadBalancer ->> Gateway: Pod
 end
 
 rect rgb(232, 245, 233)
-Note over Ticket : DomainServer(Pod)별 Ticket을 발급
-Gateway ->> Ticket : request Ticket
-Ticket ->> Gateway : publish Ticket
-
-alt 발된 ticket이 입장 ticket이 아닌 경우
-Gateway ->> Client : response Ticket
-
-else 발급된 ticket이 입장 ticket인 경우
-Gateway ->> DomainServer : proxy request
-DomainServer ->> Gateway : response
+Note over Limiter : Pod별 동시 요청 수 제한
+Gateway ->> Limiter: tryUpCount(pod)
+alt 동시 요청 수 초과
+Limiter ->> Gateway: false
+Gateway ->> Client: 429 Too Many Requests
+else 처리 가능
+Limiter ->> Gateway: true
+Gateway ->> DomainServer: proxy request
+DomainServer ->> Gateway: response
+Gateway ->> Limiter: downCount(pod)
 end
 end
 
-Gateway ->> Client : response
+Gateway ->> Client: response
 ```
 
-## Gateway Server ping test 결과 (확인 필요 대충 적음)  
+<br/>
 
-test 환경 : 적어줘~  
+## 2. ping test 결과
 
-|초당 request|처리 시간|
-|--|--|
-|20개|500ms|
+- **환경**: Gateway 컨테이너 리소스 제한 0.2 CPU / 128m
+- **도구**: k6
+- **처리 시간**: p100 (최댓값) 기준
+
+| 초당 Request | 처리 시간 (p100) |
+|:--:|:--:|
+| 50 | 83ms |
+| 60 | 95ms |
+
+<br/>
 
 ## 3. 기능 별 상세 내용
-### 1. proxy server
-> 구현 목표
-1. 모든 request를 알맞은 domain 서버에게 proxy를 담당한다
-2. auth를 처리한다
 
-> 사용한 라이브러리 : Netty
+### 3-1. Proxy Server
 
-netty 이유,
+**구현 목표**
+- 모든 요청을 알맞은 도메인 서버로 프록시한다
+- 요청 단계에서 인증(Auth)을 처리한다
 
-### 2. ticket service
-> 구현 목표 :  domain server 마다 request의 개수를 정해진 개수 이하로 유지한다
-> (ex : user server의 request 개수를 10개 이하로 유지한다)
+**사용 라이브러리** · Netty
 
-1. domain server 마다 현재 처리 중인 request의 개수를 기록한다
-2. domain server 별 초과된 request에게 ticket을 발급하여 관리한다
+Spring Boot 컨테이너 4개를 프록시하려면 더 고성능의 라이브러리가 필요했습니다. Netty는 이벤트 기반의 논블로킹 I/O로 적은 스레드로 많은 연결을 처리할 수 있어, 요청을 중계하는 Proxy Server에 매우 적합했습니다.
 
-> 구현 요약
+<br/>
 
-구현 class : Ticket, TicketService, Memory
+### 3-2. Load Balancer
+
+**구현 목표** · 요청 URI와 서버 상태를 고려해 프록시할 Pod를 선정한다
+
+1. 요청 URI로 처리할 서비스를 결정한다
+2. 해당 서비스의 인스턴스 중 상태가 가장 좋은 대상을 선정한다
+3. 일정 주기로 모든 인스턴스의 상태를 조사하고 관리한다
+
+**Status 관리**
+
+서비스 인스턴스의 상태는 `GOOD · NORMAL · BAD · DEAD · UNKNOWN` 다섯 단계로 분리해 관리하고, Netty를 통해 주기적으로 수집합니다.
+
+CheckerService가 인스턴스별로 최근 상태를 `StatusMemory`(최근 N개 버퍼)에 쌓아 두고, LoadBalancer는 매 요청마다 상태가 가장 좋은 인스턴스를 골라 프록시합니다. 상태 수집은 별도의 `NettyServer`가 각 인스턴스에 비동기로 연결해 주기적으로 갱신합니다.
+
 ```mermaid
 classDiagram
-class Ticket {
-    - waitingNumber: Integer
-    - uuid: UUID
-    + Ticket(uuid: UUID, waitingNumber: Integer)
-    + static enterTicket(uuid: UUID): Ticket
-    + canEnter(): boolean
-}
-
-class TicketService {
-    - maxConcurrentCount: Long
-    - concurrentCount: AtomicInteger
-    - memory: BitMemory
-    + TicketService(maxCount: Long)
-    + issueTicket(): Ticket
-    + updateTicket(ticket: Ticket): Ticket
-    + release(ticket: Ticket)
-}
-
-class BitMemory {
-    - bitManager: BitManager
-    - nextIssueId: AtomicInteger
-    - nextCheckId: AtomicInteger
-    - map: Map<UUID, Integer>
-    + BitMemory(size: int)
-    + put(key: UUID): int
-    + refreshValue(key: UUID): int
-    + updateKey(oldKey: UUID, newKey: UUID): int
-    + pop(key: UUID)
-}
-
-class UUID {
-    Value Object
-}
-
-class BitManager {
-    Dependency for BitMemory
-}
-
-TicketService --> Ticket
-TicketService --> BitMemory
-BitMemory --> BitManager
-Ticket --> UUID
-BitMemory --> UUID
-```
-
-### 3. load balancer 
-> 구현 목표 : request uri, service status을 감안하여 service를 proxy할 service를 선정한다
-1. request uri 별 처리할 module을 결정한다
-2. module의 service들중 가장 상태가 좋은 service를 선정한다
-2. 일정 시간마다 모든 service의 status를 조사하고 관리한다 
-
-Network domain 정리함, LoadBalancer를 구현함
-
-> service status 판단 근거 : pid 개수, test api 속도
-1. docker api를 통한 pid 개수 
-2. test api 호출 속도
-```mermaid
-classDiagram
-
+    class CheckerService {
+        - Map~Pod, StatusMemory~ dockerStatusMemory
+        - Map~Pod, StatusMemory~ testApiStatusMemory
+        + getStatus(Pod pod) ServiceStatus
+        + addStatus(Pod, ServiceStatus, StatusType)
+    }
+    class StatusMemory {
+        - Deque~ServiceStatus~ buffer
+        + addStatus(ServiceStatus)
+        + getAllStatus() List
+    }
+    class NettyServer {
+        - CheckerService checkerService
+        - Map~Pod, Bootstrap~ dockerClients
+        - Map~Pod, Bootstrap~ testApiClients
+        + start()
+    }
     class ServiceStatus {
         <<enum>>
         GOOD
         NORMAL
         BAD
         DEAD
+        UNKNOWN
     }
 
-    class LoadBalancer {
-        - List<Server> servers
-        - List<Module> models
-        - CheckerService statusChecker
-        + loadBalance(String uri)
+    CheckerService --> StatusMemory : 상태 저장/조회
+    CheckerService --> NettyServer : 상태 수집 시작
+    NettyServer --> CheckerService : 수집한 상태 저장
+```
+
+<br/>
+
+### 3-3. Limiter (요청 제한)
+
+**구현 목표** · 인스턴스별 동시 처리 요청 수를 정해진 개수 이하로 유지한다 (ex: User 서비스의 동시 요청을 6개 이하로)
+
+도메인 서버가 감당할 수 있는 양을 넘는 요청이 몰리면 컨테이너가 죽을 수 있습니다. Limiter는 인스턴스마다 현재 처리 중인 요청 수를 세어, 상한을 넘으면 새 요청을 받지 않고 `429 Too Many Requests`로 되돌립니다.
+
+- 프록시를 시작할 때 `tryUpCount`로 카운트를 올리고, 상한을 넘으면 거절
+- 응답이 끝나면 `downCount`로 카운트를 내림
+- 카운트 증감은 인스턴스 단위로 `synchronized` 처리해 동시성 보장
+
+```mermaid
+classDiagram
+    class Limiter {
+        - Map~Pod, Long~ concurrentCount
+        - Map~Pod, Long~ maxCount
+        + tryUpCount(Pod pod) boolean
+        + downCount(Pod pod)
     }
-    
-    class CheckerService {
-        - Map memoryMap
-        + getStatus(Service service) :: ServiceStatus
+    class ProxyProvider {
+        - LoadBalancer loadbalancer
+        - Limiter limiter
+        + provide(String uri) Resource
+        + release(Resource)
     }
-    
-    class StatusMemory {
-        - static final int MaxSize = 3
-        + addStatus(ServiceStatus status)
-        + getAllStatus() :: List
-    }
-    
-    class NettyServer {
-        - CheckerService
-        - Map clients
-        + start() :: void
-        - sendClients
-    }
-    
-    class ServerServiceContext {
-        - private readData()
-        + public getServers()
-        + public getModules()
-    }
-    
-    Gateway --> LoadBalancer : request
-    
-    LoadBalancer --> CheckerService : getStatus
-    LoadBalancer --> ServerServiceContext : getServers, Modules data
-    
-    CheckerService --> StatusMemory : getAllStatus
-    CheckerService --> StatusMemory : saveStatus
-    CheckerService --> NettyServer : start check status
-    
-    NettyServer --> CheckerService : save ServerStatus
-    NettyServer --> NettyServer : sendClients
+
+    ProxyProvider --> LoadBalancer : Pod 선정
+    ProxyProvider --> Limiter : 요청 수 제어
 ```
