@@ -8,7 +8,7 @@
 
 ## 만든 이유 : Cache를 사용하기 위한 Template
 1. 반복되는 Redis Cache 사용 함수를 모아서 관리하기 위함
-2. Spring, SpringBoot가 아닌 Service에서 또한 Redis Cache를 똑같이 사용하기 위함
+2. Spring, SpringBoot가 아닌 Service에서 또한 Redis Cache를 똑같이 사용하기 위함  
 **3. Redis가 문제가 생겼을 때 Local Cache를 통한 CacheService를 제공하기 위함**
 
 ## 가능한 Cache 방식
